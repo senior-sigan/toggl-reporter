@@ -1,8 +1,10 @@
-import datetime
-from requests.auth import HTTPBasicAuth
-import requests
-from urllib.parse import urljoin
 import argparse
+import datetime
+import math
+from urllib.parse import urljoin
+
+import requests
+from requests.auth import HTTPBasicAuth
 
 
 class TogglAPI:
@@ -46,18 +48,23 @@ def get_workspaces(user):
     } for w in user['data']['workspaces']]
 
 
+def round_to_minutes(milliseconds):
+    to_minutes = 60000
+    return math.ceil(milliseconds / to_minutes) * to_minutes
+
+
+def format_dur(milliseconds):
+    return str(datetime.timedelta(milliseconds=milliseconds))
+
+
 def extract_entry(entry):
     return {
         'description': entry['description'],
         'start': entry['start'],
         'end': entry['end'],
-        'dur': entry['dur'],
+        'dur': round_to_minutes(entry['dur']),
         'tags': entry['tags']
     }
-
-
-def format_dur(milliseconds):
-    return str(datetime.timedelta(milliseconds=milliseconds))
 
 
 def format_date(date):
@@ -68,20 +75,19 @@ def format_date(date):
 def build_report(data):
     total_dur = 0
     groups = {}
-    for entry in data['data']:
-        project = entry['project']
-        entry_ = extract_entry(entry)
-        date = entry_['start']
-        total_dur += entry['dur']
+    for el in data['data']:
+        project = el['project']
+        entry_ = extract_entry(el)
+        total_dur += entry_['dur']
         if groups.get(project) is None:
             groups[project] = {
                 'project': project,
-                'total_dur': entry['dur'],
+                'total_dur': entry_['dur'],
                 'entries': [entry_]
             }
         else:
             groups[project]['entries'].append(entry_)
-            groups[project]['total_dur'] += entry['dur']
+            groups[project]['total_dur'] += entry_['dur']
 
     return {
         'date': data['req']['date'],
@@ -90,18 +96,28 @@ def build_report(data):
     }
 
 
+def group_entries_by_description_and_sum_dur(entries):
+    groups = {}
+    for entry in entries:
+        desk = entry['description']
+        if groups.get(desk) is None:
+            groups[desk] = entry
+        else:
+            groups[desk]['dur'] += entry['dur']
+    return sorted(groups.values(), key=lambda el: el['start'])
+
+
 def print_report(report):
     print(f"REPORT for {report['date']}")
     print(f"total time {format_dur(report['total_dur'])}")
     print("")
     for proj_name in report['groups']:
-        group = report['groups'][proj_name]
-        dur = format_dur(group['total_dur'])
+        project = report['groups'][proj_name]
+        dur = format_dur(project['total_dur'])
         print(f"{proj_name} {dur}")
-        group['entries'] = sorted(group['entries'], key=lambda el: el['start'])
-
-        for entry in group['entries']:
-            print(f"- {entry['description']}")
+        entries = group_entries_by_description_and_sum_dur(project['entries'])
+        for entry in entries:
+            print(f"- {entry['description']} - {format_dur(entry['dur'])}")
         print("")
 
 
@@ -120,7 +136,7 @@ def select_ws(args, api):
 
     ws = get_workspaces(api.get_me())
     if len(ws) == 0:
-        print("Create workspace in toggl")
+        print("You need at least one workspace. Create workspace in toggl.")
         exit(0)
     if len(ws) > 1:
         print("You have many workspaces. Please set --workspace argument with an ID you need.")
