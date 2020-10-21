@@ -4,14 +4,14 @@ import requests
 from urllib.parse import urljoin
 import argparse
 
+
 class TogglAPI:
     def __init__(self, token: str):
         self.token = token
         self.auth = HTTPBasicAuth(token, 'api_token')
         self.base_url = 'https://api.track.toggl.com'
         self.app_name = 'senior_sigan_reporter'
-        
-        
+
     def get_report(self, workspace_id, date):
         path = '/reports/api/v2/details'
         query = {
@@ -38,12 +38,14 @@ class TogglAPI:
         data = response.json()
         return data
 
+
 def get_workspaces(user):
     return [{
         'id': w['id'],
         'name': w['name']
     } for w in user['data']['workspaces']]
-    
+
+
 def extract_entry(entry):
     return {
         'description': entry['description'],
@@ -53,12 +55,15 @@ def extract_entry(entry):
         'tags': entry['tags']
     }
 
+
 def format_dur(milliseconds):
     return str(datetime.timedelta(milliseconds=milliseconds))
 
+
 def format_date(date):
-    d=datetime.datetime.fromisoformat(date)
+    d = datetime.datetime.fromisoformat(date)
     return d.strftime("%Y-%m-%d %A")
+
 
 def build_report(data):
     total_dur = 0
@@ -84,6 +89,7 @@ def build_report(data):
         'groups': groups
     }
 
+
 def print_report(report):
     print(f"REPORT for {report['date']}")
     print(f"total time {format_dur(report['total_dur'])}")
@@ -98,12 +104,15 @@ def print_report(report):
             print(f"- {entry['description']}")
         print("")
 
+
 def parse_args():
     parser = argparse.ArgumentParser(description='Toggl Reporter!')
     parser.add_argument('--token', required=True, help='API Token. Copy it from https://track.toggl.com/profile')
     parser.add_argument('--date', required=False, help='Which date make report for. Format 2020-10-27')
-    parser.add_argument('--workspace', required=False, help='Workspace ID. You can left it empty if you have only one workspace')
+    parser.add_argument('--workspace', required=False,
+                        help='Workspace ID. You can left it empty if you have only one workspace')
     return parser.parse_args()
+
 
 def select_ws(args, api):
     if args.workspace is not None and len(args.workspace) != 0:
@@ -121,11 +130,13 @@ def select_ws(args, api):
     if len(ws) == 1:
         return ws[0]['id']
 
+
 def select_date(args):
     if args.date is not None and len(args.date) != 0:
         return args.date
 
     return datetime.datetime.now().strftime("%Y-%m-%d")
+
 
 def main(args):
     api = TogglAPI(args.token)
@@ -136,6 +147,7 @@ def main(args):
     data = api.get_report(workspace_id, date)
     report = build_report(data)
     print_report(report)
+
 
 if __name__ == "__main__":
     main(parse_args())
