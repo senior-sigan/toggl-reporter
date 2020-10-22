@@ -35,8 +35,3 @@ Install dependencies.
 ```shell
 pip install -r requirements.txt
 ```
-
-## Plans
-
-- [ ] wrap into pip package
-- [ ] rewrite into Go so nobody need to use python
