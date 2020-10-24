@@ -1,11 +1,13 @@
 # Toggl reporter
 
+[![PyPI version](https://badge.fury.io/py/toggl-reporter.svg)](https://badge.fury.io/py/toggl-reporter)
+
 I need to write work report every evening. To make this routine simpler I created this CLI reporter.
 
 ## How to use
 
 ```shell
-python -m toggl_reporter --token=YOUR_TOKEN --date=2020-10-20
+toggl_reporter --token=YOUR_TOKEN --date=2020-10-20
 ```
 
 Script will ask you details if needed. By default date is today if you not specify it.
@@ -30,8 +32,6 @@ study-python 3:00:00
 
 You need a Python 3.
 
-Install dependencies.
-
 ```shell
-pip install -r requirements.txt
+pip install toggl-reporter
 ```
