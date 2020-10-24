@@ -1,0 +1,4 @@
+wemake-python-styleguide
+mypy
+flake8
+autopep8

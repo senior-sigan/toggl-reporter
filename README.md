@@ -1,11 +1,11 @@
 # Toggl reporter
 
-I need to write work report every evening. To make this routine simplier I created this CLI reporter.
+I need to write work report every evening. To make this routine simpler I created this CLI reporter.
 
 ## How to use
 
 ```shell
-python main.py --token=YOUR_TOKEN --date=2020-10-20
+python -m toggl_reporter --token=YOUR_TOKEN --date=2020-10-20
 ```
 
 Script will ask you details if needed. By default date is today if you not specify it.
