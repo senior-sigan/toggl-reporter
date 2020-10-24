@@ -21,7 +21,7 @@ def get_requirements():
 
 setuptools.setup(
     name='toggl-reporter',
-    version='0.0.1',
+    version='0.0.2',
     author='Ilya Siganov',
     author_email='ilya.blan4@gmail.com',
     description='A tool to build daily reports from Toggle with nice grouping',
@@ -39,7 +39,7 @@ setuptools.setup(
     zip_safe=False,
     entry_points={
         'console_scripts': [
-            'toggl_report = toggl_report.__main__:main',
+            'toggl_reporter = toggl_reporter.__main__:main',
         ],
     },
     python_requires='>=3.6',
