@@ -27,10 +27,11 @@ def parse_args():
 
 def select_ws(args, api):
     if args.workspace is not None:
-        print('You need at least one workspace. Create workspace in toggl.')
         return args.workspace
 
     ws = get_workspaces(api.get_me())
+    if not ws:
+        print('You need at least one workspace. Create workspace in toggl.')
     if len(ws) > 1:
         print(
             'You have many workspaces.',
