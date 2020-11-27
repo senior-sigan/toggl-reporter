@@ -21,7 +21,7 @@ def get_requirements():
 
 setuptools.setup(
     name='toggl-reporter',
-    version='0.0.2',
+    version='0.0.3',
     author='Ilya Siganov',
     author_email='ilya.blan4@gmail.com',
     description='A tool to build daily reports from Toggle with nice grouping',
