@@ -1,0 +1,14 @@
+{{ define "content" }}
+
+<h1>Login</h1>
+<p>Enter your Toggl token. It will be stored in your cookies.</p>
+<p>You can get your Token in the <a href='https://track.toggl.com/profile' target="_blank">Profile page # API Token</a>
+<p>Get password <a href='{{ .Instructions }}' target="blank">here</a>.</p>
+</p>
+<form method="POST" action="/login">
+    <input name="token" type="text" placeholder="Toggl token">
+    <input name="password" type="password" placeholder="Password">
+    <button type="submit" value="Login">Login</button>
+</form>
+
+{{ end }}

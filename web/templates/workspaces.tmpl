@@ -1,0 +1,13 @@
+{{ define "content" }}
+
+<h1>Hello, {{ .User.Fullname }}</h1>
+<img src="{{ .User.ImageURL }}" />
+
+<p>Select a workspace where you have projects.</p>
+<form method="POST" action="/workspace">
+    {{ range .Workspaces }}
+    <button type="submit" name='workspace_id' value="{{ .Id }}">{{ .Name }}</button>
+    {{ end }}
+</form>
+
+{{ end }}

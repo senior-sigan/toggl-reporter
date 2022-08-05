@@ -1,0 +1,33 @@
+addr = "0.0.0.0:8000"
+password = "password"
+instructions = "http://example.com"
+
+[forms.redmine]
+url = "https://www.redmine.org/"
+
+[forms.google.mapping]
+project_name = "entry.2004201849"
+project_tasks = "entry.60008525"
+project_hours = "entry.291946000_hour"
+project_minutes = "entry.291946000_minute"
+project_seconds = "entry.291946000_second"
+nonpaid_project_tasks = "entry.714539999"
+nonpaid_project_hours = "entry.52836812_hour"
+nonpaid_project_minutes = "entry.52836812_minute"
+nonpaid_project_seconds = "entry.52836812_second"
+next_tasks = "entry.1462603973"
+report_year = "entry.1783131858_year"
+report_month = "entry.1783131858_month"
+report_day = "entry.1783131858_day"
+internal_tasks = "entry.20657743"
+internal_hours = "entry.2061354997_hour"
+internal_minutes = "entry.2061354997_minute"
+internal_seconds = "entry.2061354997_second"
+
+[forms.google.params]
+url = "https://docs.google.com/forms/d/e/GOOGLE_FORM_KEY/viewform"
+internal = "internal"
+
+[reporter]
+project_time_precision = 300 # in seconds
+task_time_precision = 60 # in seconds

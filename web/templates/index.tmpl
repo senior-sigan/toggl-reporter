@@ -1,0 +1,56 @@
+{{ define "content" }}
+
+<a href='/projects'>Setup projects in toggl</a>
+/
+<a href='/logout'>Logout</a>
+
+<br>
+
+<div>
+    <h1>Report for {{ .Report.At.Format "2006-01-02" }}</h1>
+    <p>Total time is {{ .Report.TotalDuration | formatDuration }}</p>
+    <br>
+    {{- $redmineData := .RedmineData -}}
+    {{- $formData := .FormData -}}
+    {{ range $id, $project := .Report.Projects }}
+        {{- $formUrl := index $formData $project.Name -}}
+        {{- $redmineProject := index $redmineData $id -}}
+        {{ if $formUrl }}
+        <h2><a href='{{ $formUrl }}' target='_blank'>
+        {{ $project.Name }} {{ $project.TotalDuration | formatDuration }}
+        </a></h2>
+        {{ else }}
+        <h2>{{ $project.Name }} {{ $project.TotalDuration | formatDuration }}</h2>
+        {{ end }}
+        <ul>
+            <li>
+                <p>Paid {{ $project.Paid.Duration | formatDuration  }}</p>
+                <ul>
+                {{ range $description, $duration := $project.Paid.Tasks }}
+                    {{- $redmineForm := index $redmineProject $description -}}
+                    {{- if $redmineForm -}}
+                        <a href="{{ $redmineForm }}" target="_blank">
+                            <li>{{ $description }} {{ $duration | formatDuration  }}</li>
+                        </a>
+                    {{ else }}
+                        <li>{{ $description }} {{ $duration | formatDuration  }}</li>
+                    {{ end }}
+                {{ end }}
+                </ul>
+            </li>
+
+            {{ if $project.NonPaid.Duration  }}
+            <li>
+                <p>Non-Paid {{ $project.NonPaid.Duration | formatDuration  }}</p>
+                <ul>
+                {{ range $description, $duration := $project.NonPaid.Tasks }}
+                    <li>{{ $description }} {{ $duration | formatDuration  }}</li>
+                {{ end }}
+                </ul>
+            </li>
+            {{ end }}
+        </ul>
+    {{ end }}
+</div>
+
+{{ end }}
