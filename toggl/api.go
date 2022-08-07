@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 	"time"
 )
 
@@ -28,9 +29,9 @@ type Toggl interface {
 	GetWorkspaces() (response []Workspace, err error)
 	GetTimeEntries(startDate time.Time, endDate time.Time) (response []TimeEntry, err error)
 	GetTimeEntriesForWorkspace(startDate time.Time, endDate time.Time, workspaceId int) ([]TimeEntry, error)
+	GetTimeEntriesForWorkspaceV2(startDate time.Time, endDate time.Time, workspaceId int) ([]TimeEntry, error)
 	GetProjects(workspaceId int) (map[int]Project, error)
 }
-
 type TimeEntry struct {
 	Id          int64         `json:"id"`
 	WorkspaceId int           `json:"workspace_id"`
@@ -39,7 +40,6 @@ type TimeEntry struct {
 	Stop        time.Time     `json:"stop"`
 	Duration    time.Duration `json:"duration"`
 	Description string        `json:"description"`
-	At          time.Time     `json:"at"`
 	TagsArray   []string      `json:"tags"`
 	Tags        map[string]bool
 }
@@ -167,6 +167,53 @@ func (toggl *TogglData) GetTimeEntriesForWorkspace(startDate time.Time, endDate 
 	}
 
 	return filteredEntries, nil
+}
+
+func (toggl *TogglData) GetTimeEntriesForWorkspaceV2(startDate time.Time, endDate time.Time, workspaceId int) ([]TimeEntry, error) {
+	query := url.Values{}
+	query.Set("since", startDate.Format(DateFormat))
+	query.Add("until", startDate.Format(DateFormat)) // TODO: Sadly this API need start and end date to be the same to generate a daily report
+	query.Add("workspace_id", strconv.Itoa(workspaceId))
+	query.Add("user_agent", AppName)
+
+	var response struct {
+		Data []struct {
+			Id          int64         `json:"id"`
+			ProjectId   int           `json:"pid"`
+			ProjectName string        `json:"project"`
+			Start       time.Time     `json:"start"`
+			Stop        time.Time     `json:"end"`
+			Duration    time.Duration `json:"dur"`
+			Description string        `json:"description"`
+			TagsArray   []string      `json:"tags"`
+		} `json:"data"`
+	}
+	if err := toggl.Handler.Execute("/reports/api/v2/details", query, &response); err != nil {
+		return nil, err
+	}
+
+	entries := make([]TimeEntry, len(response.Data))
+	for i, entry := range response.Data {
+		tags := make(map[string]bool)
+
+		for _, tag := range entry.TagsArray { // convert into set
+			tags[tag] = true
+		}
+
+		entries[i] = TimeEntry{
+			Id:          entry.Id,
+			WorkspaceId: workspaceId,
+			ProjectId:   entry.ProjectId,
+			Start:       entry.Start,
+			Stop:        entry.Stop,
+			Duration:    entry.Duration * time.Millisecond,
+			Description: entry.Description,
+			TagsArray:   entry.TagsArray,
+			Tags:        tags,
+		}
+	}
+
+	return entries, nil
 }
 
 func (toggl *TogglData) GetProjects(workspaceId int) (map[int]Project, error) {

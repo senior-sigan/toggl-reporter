@@ -83,7 +83,7 @@ func (reporter *Reporter) BuildReport(workspaceId int, startDate time.Time, endD
 }
 
 func (reporter *Reporter) groupByProjectTag(report Report, startDate time.Time, endDate time.Time) (Report, error) {
-	timeEntries, err := reporter.TogglClient.GetTimeEntriesForWorkspace(startDate, endDate, report.WorkspaceId)
+	timeEntries, err := reporter.TogglClient.GetTimeEntriesForWorkspaceV2(startDate, endDate, report.WorkspaceId)
 	if err != nil {
 		return report, err
 	}

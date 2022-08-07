@@ -3,6 +3,7 @@ package toggl
 import (
 	"fmt"
 	"log"
+	"net/url"
 	"os"
 	"testing"
 	"time"
@@ -11,6 +12,14 @@ import (
 var token string
 var startDate time.Time
 var endDate time.Time
+
+type FakeHandler struct {
+	Executor func(method string, query url.Values, response interface{}) error
+}
+
+func (h *FakeHandler) Execute(method string, query url.Values, response interface{}) error {
+	return h.Executor(method, query, response)
+}
 
 func TestMain(m *testing.M) {
 	token = os.Getenv("TOGGLE_TOKEN")
@@ -83,4 +92,15 @@ func TestToggl_GetProjects(t *testing.T) {
 		t.Errorf("GetProjects error %v", err)
 	}
 	fmt.Println(projects)
+}
+
+func TestTogglData_GetTimeEntriesForWorkspaceV2(t *testing.T) {
+	toggl := NewToggl(token)
+	startDate = time.Date(2022, 8, 5, 0, 0, 0, 0, time.UTC)
+	endDate = time.Date(2022, 8, 6, 0, 0, 0, 0, time.UTC)
+	entries, err := toggl.GetTimeEntriesForWorkspaceV2(startDate, endDate, 2200006)
+	if err != nil {
+		t.Errorf("GetTimeEntriesForWorkspaceV2 error %v", err)
+	}
+	fmt.Printf("%v", entries)
 }
