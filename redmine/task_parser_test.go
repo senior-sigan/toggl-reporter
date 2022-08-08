@@ -12,10 +12,14 @@ func TestParseTaskText(t *testing.T) {
 		want  int
 		want1 bool
 	}{
-		{name: "Should find task in format 'Task #NUMBER: text'", args: args{description: "Task #42: Some work"}, want: 42, want1: true},
-		{name: "Should find task in format '38: text'", args: args{description: "38: Some work"}, want: 38, want1: true},
-		{name: "Should not find task", args: args{description: "Some work Lol Task #42: kek"}, want: 0, want1: false},
+		{name: "Should find task", args: args{description: "Task #42 Some work"}, want: 42, want1: true},
+		{name: "Should find task", args: args{description: "Story #42 Some work"}, want: 42, want1: true},
+		{name: "Should find task", args: args{description: "Bug #42 Some work"}, want: 42, want1: true},
+		{name: "Should find task", args: args{description: "38: Some work"}, want: 38, want1: true},
+		{name: "Should find task", args: args{description: "38: Some work"}, want: 38, want1: true},
+		{name: "Should find task", args: args{description: "#42 Some work"}, want: 0, want1: false},
 		{name: "Should not find task", args: args{description: "Some task with 42 number"}, want: 0, want1: false},
+		{name: "Should not find task", args: args{description: "Some task with 42: number"}, want: 0, want1: false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

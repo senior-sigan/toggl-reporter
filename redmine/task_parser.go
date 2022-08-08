@@ -5,8 +5,8 @@ import (
 	"goreporter/report"
 	"goreporter/utils"
 	"net/url"
+	"regexp"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -16,19 +16,23 @@ type ReportGenerator struct {
 
 // FindTaskId Finds task ID in the string "Task #42: description" or "42: description".
 func FindTaskId(description string) (int, bool) {
-	description = strings.TrimSpace(description)
-	if strings.HasPrefix(description, "Task #") {
-		description = description[6:]
-		parts := strings.Split(description, ": ")
-		if taskIdx, err := strconv.Atoi(parts[0]); err == nil {
-			return taskIdx, true
-		}
-	} else {
-		parts := strings.Split(description, ": ")
-		if taskIdx, err := strconv.Atoi(parts[0]); err == nil {
+	re1 := regexp.MustCompile(`^(\d+):\s+`)   // 42: description
+	re2 := regexp.MustCompile(`\s+#(\d+)\s+`) // Task #42 description
+
+	groups1 := re1.FindStringSubmatch(description)
+	if groups1 != nil && len(groups1) >= 2 {
+		if taskIdx, err := strconv.Atoi(groups1[1]); err == nil {
 			return taskIdx, true
 		}
 	}
+
+	groups2 := re2.FindStringSubmatch(description)
+	if groups2 != nil && len(groups2) >= 2 {
+		if taskIdx, err := strconv.Atoi(groups2[1]); err == nil {
+			return taskIdx, true
+		}
+	}
+
 	return 0, false
 }
 
