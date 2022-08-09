@@ -209,7 +209,7 @@ func SaveWorkspace(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
 		Name:   CookieWorkspace,
 		Value:  workspaceID,
-		MaxAge: 3600,
+		MaxAge: 2592000,
 		Secure: true,
 	})
 
@@ -278,7 +278,7 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
 		Name:   CookieToken,
 		Value:  token,
-		MaxAge: 3600,
+		MaxAge: 2592000,
 		Secure: true,
 	})
 
