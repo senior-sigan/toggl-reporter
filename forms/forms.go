@@ -128,18 +128,21 @@ func (gen *GoogleFormGenerator) ConvertReportToForms(report report.Report) map[s
 func (gen *GoogleFormGenerator) encode(form GoogleFormData) string {
 	query := url.Values{}
 	query.Set(gen.Mapping.ProjectName, form.ProjectName)
-	if form.ProjectTasks != "" {
+	
+	if (form.ProjectTasks != "") {
 		query.Set(gen.Mapping.ProjectTasks, form.ProjectTasks)
-		query.Set(gen.Mapping.ProjectHours, strconv.Itoa(form.ProjectHours))
-		query.Set(gen.Mapping.ProjectMinutes, strconv.Itoa(form.ProjectMinutes))
-		query.Set(gen.Mapping.ProjectSeconds, strconv.Itoa(form.ProjectSeconds))
+	} else {
+		query.Set(gen.Mapping.ProjectTasks, "-")
 	}
-	if form.NonpaidProjectTasks != "" {
-		query.Set(gen.Mapping.NonpaidProjectTasks, form.NonpaidProjectTasks)
-		query.Set(gen.Mapping.NonpaidProjectHours, strconv.Itoa(form.NonpaidProjectHours))
-		query.Set(gen.Mapping.NonpaidProjectMinutes, strconv.Itoa(form.NonpaidProjectMinutes))
-		query.Set(gen.Mapping.NonpaidProjectSeconds, strconv.Itoa(form.NonpaidProjectSeconds))
-	}
+	query.Set(gen.Mapping.ProjectHours, strconv.Itoa(form.ProjectHours))
+	query.Set(gen.Mapping.ProjectMinutes, strconv.Itoa(form.ProjectMinutes))
+	query.Set(gen.Mapping.ProjectSeconds, strconv.Itoa(form.ProjectSeconds))
+
+	query.Set(gen.Mapping.NonpaidProjectTasks, form.NonpaidProjectTasks)
+	query.Set(gen.Mapping.NonpaidProjectHours, strconv.Itoa(form.NonpaidProjectHours))
+	query.Set(gen.Mapping.NonpaidProjectMinutes, strconv.Itoa(form.NonpaidProjectMinutes))
+	query.Set(gen.Mapping.NonpaidProjectSeconds, strconv.Itoa(form.NonpaidProjectSeconds))
+
 	if form.NextTasks != "" {
 		query.Set(gen.Mapping.NextTasks, form.NextTasks)
 	}
@@ -147,12 +150,10 @@ func (gen *GoogleFormGenerator) encode(form GoogleFormData) string {
 	query.Set(gen.Mapping.ReportMonth, strconv.Itoa(form.ReportMonth))
 	query.Set(gen.Mapping.ReportDay, strconv.Itoa(form.ReportDay))
 
-	if form.InternalTasks != "" {
-		query.Set(gen.Mapping.InternalTasks, form.InternalTasks)
-		query.Set(gen.Mapping.InternalHours, strconv.Itoa(form.InternalHours))
-		query.Set(gen.Mapping.InternalMinutes, strconv.Itoa(form.InternalMinutes))
-		query.Set(gen.Mapping.InternalSeconds, strconv.Itoa(form.InternalSeconds))
-	}
+	query.Set(gen.Mapping.InternalTasks, form.InternalTasks)
+	query.Set(gen.Mapping.InternalHours, strconv.Itoa(form.InternalHours))
+	query.Set(gen.Mapping.InternalMinutes, strconv.Itoa(form.InternalMinutes))
+	query.Set(gen.Mapping.InternalSeconds, strconv.Itoa(form.InternalSeconds))
 
 	return query.Encode()
 }
