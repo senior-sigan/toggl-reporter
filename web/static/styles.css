@@ -1,0 +1,23 @@
+:root {
+    --links-visited: #00457a;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --links-visited: #2792c3;
+    }   
+}
+
+a:visited {
+    text-decoration: none;
+    color: #00457a;
+    color: var(--links-visited);
+  }
+  
+  @media (prefers-color-scheme: dark) {
+  
+    a:visited {
+    color: #2792c3;
+    color: var(--links-visited);
+    }
+  }
