@@ -4,7 +4,7 @@
 
 <br>
 
-<div>
+<div id='report' data-report-data={{ .ReportJSON }} >
     <h1>Report for {{ .Report.At.Format "2006-01-02" }}</h1>
     <p>Total time is {{ .Report.TotalDuration | formatDuration }}</p>
     <br>

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"embed"
+	"encoding/json"
 	"fmt"
 	"github.com/BurntSushi/toml"
 	"github.com/go-chi/chi/v5"
@@ -45,6 +46,7 @@ type WorkspacesPage struct {
 
 type ReportPage struct {
 	Report      report.Report
+	ReportJSON  string
 	FormData    map[string]string
 	RedmineData map[int]map[string]string
 }
@@ -247,10 +249,16 @@ func ShowIndex(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 	}
 
+	reportJson, err := json.Marshal(dailyReport)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
+	}
+
 	pageData := ReportPage{
 		Report:      dailyReport,
 		FormData:    formGenerator.ConvertReportToForms(dailyReport),
 		RedmineData: redmineGenerator.BuildRedmineReportForms(dailyReport),
+		ReportJSON:  string(reportJson),
 	}
 
 	renderer.RenderHTML(w, "index", pageData)

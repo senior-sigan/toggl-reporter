@@ -8,10 +8,11 @@ import (
 )
 
 type Report struct {
-	At            time.Time
-	TotalDuration time.Duration
-	Projects      map[int]Project
-	WorkspaceId   int
+	At             time.Time         `json:"at"`
+	TotalDuration  time.Duration     `json:"totalDuration"`
+	Projects       map[int]Project   `json:"projects"`
+	WorkspaceId    int               `json:"workspaceId"`
+	RawTimeEntries []toggl.TimeEntry `json:"rawTimeEntries"`
 }
 
 type Project struct {
@@ -30,14 +31,6 @@ type Reporter struct {
 	TogglClient          toggl.Toggl
 	ProjectTimePrecision time.Duration
 	TaskTimePrecision    time.Duration
-}
-
-func NewReporter(togglClient toggl.Toggl) *Reporter {
-	return &Reporter{
-		TogglClient:          togglClient,
-		ProjectTimePrecision: time.Duration(5) * time.Minute,
-		TaskTimePrecision:    time.Duration(1) * time.Minute,
-	}
 }
 
 func newProject(name string) Project {
@@ -71,10 +64,10 @@ func (reporter *Reporter) BuildDailyReport(workspaceId int, startDate time.Time)
 func (reporter *Reporter) BuildReport(workspaceId int, startDate time.Time, endDate time.Time) (Report, error) {
 	report := newReport(startDate, workspaceId)
 
-	if report, err := reporter.groupByProjectTag(report, startDate, endDate); err != nil {
+	if err := reporter.groupByProjectTag(&report, startDate, endDate); err != nil {
 		return report, err
 	}
-	if report, err := reporter.injectProjectNames(report); err != nil {
+	if err := reporter.injectProjectNames(&report); err != nil {
 		return report, err
 	}
 	report = sumTime(report, reporter.ProjectTimePrecision)
@@ -82,10 +75,10 @@ func (reporter *Reporter) BuildReport(workspaceId int, startDate time.Time, endD
 	return report, nil
 }
 
-func (reporter *Reporter) groupByProjectTag(report Report, startDate time.Time, endDate time.Time) (Report, error) {
+func (reporter *Reporter) groupByProjectTag(report *Report, startDate time.Time, endDate time.Time) error {
 	timeEntries, err := reporter.TogglClient.GetTimeEntriesForWorkspaceV2(startDate, endDate, report.WorkspaceId)
 	if err != nil {
-		return report, err
+		return err
 	}
 
 	for _, entry := range timeEntries {
@@ -100,13 +93,15 @@ func (reporter *Reporter) groupByProjectTag(report Report, startDate time.Time, 
 		}
 	}
 
-	return report, nil
+	report.RawTimeEntries = timeEntries
+
+	return nil
 }
 
-func (reporter *Reporter) injectProjectNames(report Report) (Report, error) {
+func (reporter *Reporter) injectProjectNames(report *Report) error {
 	projects, err := reporter.TogglClient.GetProjects(report.WorkspaceId)
 	if err != nil {
-		return report, err
+		return err
 	}
 
 	for projectId := range report.Projects {
@@ -115,7 +110,7 @@ func (reporter *Reporter) injectProjectNames(report Report) (Report, error) {
 			report.Projects[projectId] = proj
 		}
 	}
-	return report, nil
+	return nil
 }
 
 func addTime(block TasksBlock, entry toggl.TimeEntry, precision time.Duration) TasksBlock {
