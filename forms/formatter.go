@@ -2,8 +2,8 @@ package forms
 
 import (
 	"goreporter/utils"
-	"html/template"
 	"strings"
+	"text/template"
 	"time"
 )
 
