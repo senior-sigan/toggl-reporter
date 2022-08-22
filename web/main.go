@@ -5,6 +5,7 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
+	"goreporter/achievements"
 	"goreporter/forms"
 	"goreporter/redmine"
 	"goreporter/report"
@@ -48,6 +49,13 @@ type User struct {
 type WorkspacesPage struct {
 	User       toggl.Me
 	Workspaces []toggl.Workspace
+}
+
+type AchievementsPage struct {
+	ReportJSON      string
+	At              time.Time
+	User            toggl.Me
+	AchievementsMap map[string]achievements.UserAchievement
 }
 
 type ReportPage struct {
@@ -290,6 +298,11 @@ func ShowAchievements(w http.ResponseWriter, r *http.Request) {
 	}
 	startDate := time.Now()
 
+	// here need to extract some achievements
+	// maybe create map/list with achievements, each with it's own request/function to form result
+	// as start - "Project worker" - has project with 30 or more hours for last 7 days
+	// or "Full-Time" - working time >= has tracked 8 hours for today
+
 	reporter := report.Reporter{
 		TogglClient:          user.Toggl,
 		ProjectTimePrecision: time.Duration(config.Reporter.ProjectTimePrecision) * time.Second,
@@ -300,16 +313,41 @@ func ShowAchievements(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 	}
 
+	me, err := user.Toggl.GetMe()
+	if err != nil {
+		log.Printf("[ERROR] cannot load user info from toggle: %v", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	achievementsList := achievements.AchievementsList
+
+	if dailyReport.TotalDuration >= 8*time.Hour {
+		element := achievementsList[achievements.FullTimeAchievement]
+		element.IsUnlocked = true
+		achievementsList[achievements.FullTimeAchievement] = element
+	}
+
+	for _, project := range dailyReport.Projects {
+		if project.TotalDuration >= 6*time.Hour {
+			element := achievementsList[achievements.DedicatedWorkerAchievement]
+			element.IsUnlocked = true
+			achievementsList[achievements.DedicatedWorkerAchievement] = element
+
+			break
+		}
+	}
+
 	reportJson, err := json.Marshal(dailyReport)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 	}
 
-	pageData := ReportPage{
-		Report:      dailyReport,
-		FormData:    formGenerator.ConvertReportToForms(dailyReport),
-		RedmineData: nil,
-		ReportJSON:  string(reportJson),
+	pageData := AchievementsPage{
+		User:            me,
+		At:              startDate,
+		AchievementsMap: achievementsList,
+		ReportJSON:      string(reportJson),
 	}
 	renderer.RenderHTML(w, "achievements", pageData)
 }

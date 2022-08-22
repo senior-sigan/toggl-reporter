@@ -7,41 +7,19 @@
 <br>
 
 <div id='report' data-report-data={{ .ReportJSON }} >
-    <h1>Report for {{ .Report.At.Format "2006-01-02" }}</h1>
-    <p>Total time is {{ .Report.TotalDuration | formatDuration }}</p>
+    <h1>Achievements of {{ .User.Fullname }} for {{ .At.Format "2006-01-02" }}</h1>
     <br>
-    {{- $redmineData := .RedmineData -}}
-    {{- $formData := .FormData -}}
-    {{ range $id, $project := .Report.Projects }}
-        {{- $formUrl := index $formData $project.Name -}}
-        {{ if $formUrl }}
-        <h2><a href='{{ $formUrl }}' target='_blank'>
-        {{ $project.Name }} {{ $project.TotalDuration | formatDuration }}
-        </a></h2>
-        {{ else }}
-        <h2>{{ $project.Name }} {{ $project.TotalDuration | formatDuration }}</h2>
-        {{ end }}
+    {{ range $id, $achievement := .AchievementsMap }}
+        {{ if $achievement.IsUnlocked }}
         <ul>
             <li>
-                <p>Paid {{ $project.Paid.Duration | formatDuration  }}</p>
+                <p>{{ $achievement.Name }}</p>
                 <ul>
-                {{ range $description, $duration := $project.Paid.Tasks }}
-                        <li>{{ $description }} {{ $duration | formatDuration  }}</li>
-                {{ end }}
+                        <li>{{ $achievement.ConditionDescription }}</li>
                 </ul>
             </li>
-
-            {{ if $project.NonPaid.Duration  }}
-            <li>
-                <p>Non-Paid {{ $project.NonPaid.Duration | formatDuration  }}</p>
-                <ul>
-                {{ range $description, $duration := $project.NonPaid.Tasks }}
-                    <li>{{ $description }} {{ $duration | formatDuration  }}</li>
-                {{ end }}
-                </ul>
-            </li>
-            {{ end }}
         </ul>
+        {{ end }}
     {{ end }}
 </div>
 
