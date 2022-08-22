@@ -62,11 +62,11 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
 	renderer = NewRenderer(&templatesFS)
 	renderer.Register("login", "templates/login.tmpl")
 	renderer.Register("index", "templates/index.tmpl")
 	renderer.Register("workspaces", "templates/workspaces.tmpl")
+	renderer.Register("achievements", "templates/achievements.tmpl")
 
 	formGenerator = forms.GoogleFormGenerator{
 		FormURL:             config.Forms.Google.Params.Url,
@@ -101,6 +101,14 @@ func main() {
 		return r
 	}())
 
+	r.Mount("/achievement", func() http.Handler {
+		r := chi.NewRouter()
+		r.Use(UserOnly)
+		r.Use(UserWithWorkspaceOnly)
+		r.Get("/", ShowAchievements)
+		return r
+	}())
+
 	r.Mount("/", func() http.Handler {
 		r := chi.NewRouter()
 		r.Use(UserOnly)
@@ -110,13 +118,14 @@ func main() {
 		return r
 	}())
 
-	fmt.Printf("Listening to http://%v", config.Addr)
+	fmt.Printf("Listening to http://%v\n", config.Addr)
 	err = http.ListenAndServe(config.Addr, r)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
+// here is source of problem with 307 redirect
 func MustHaveDateParam(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		dateStr := r.URL.Query().Get("date")
@@ -268,6 +277,41 @@ func ShowIndex(w http.ResponseWriter, r *http.Request) {
 	}
 
 	renderer.RenderHTML(w, "index", pageData)
+}
+
+func ShowAchievements(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	user, ok := ctx.Value("user").(*User)
+	if !ok {
+		renderer.RenderHTML(w, "login", map[string]string{
+			"Instructions": config.Instructions,
+		})
+		return
+	}
+	startDate := time.Now()
+
+	reporter := report.Reporter{
+		TogglClient:          user.Toggl,
+		ProjectTimePrecision: time.Duration(config.Reporter.ProjectTimePrecision) * time.Second,
+		TaskTimePrecision:    time.Duration(config.Reporter.TaskTimePrecision) * time.Second,
+	}
+	dailyReport, err := reporter.BuildDailyReport(user.WorkspaceId, startDate)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
+	}
+
+	reportJson, err := json.Marshal(dailyReport)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
+	}
+
+	pageData := ReportPage{
+		Report:      dailyReport,
+		FormData:    formGenerator.ConvertReportToForms(dailyReport),
+		RedmineData: nil,
+		ReportJSON:  string(reportJson),
+	}
+	renderer.RenderHTML(w, "achievements", pageData)
 }
 
 func ShowLogin(w http.ResponseWriter, r *http.Request) {

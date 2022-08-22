@@ -14,7 +14,6 @@
     {{- $formData := .FormData -}}
     {{ range $id, $project := .Report.Projects }}
         {{- $formUrl := index $formData $project.Name -}}
-        {{- $redmineProject := index $redmineData $id -}}
         {{ if $formUrl }}
         <h2><a href='{{ $formUrl }}' target='_blank'>
         {{ $project.Name }} {{ $project.TotalDuration | formatDuration }}
@@ -27,14 +26,7 @@
                 <p>Paid {{ $project.Paid.Duration | formatDuration  }}</p>
                 <ul>
                 {{ range $description, $duration := $project.Paid.Tasks }}
-                    {{- $redmineForm := index $redmineProject $description -}}
-                    {{- if $redmineForm -}}
-                        <a href="{{ $redmineForm }}" target="_blank">
-                            <li>{{ $description }} {{ $duration | formatDuration  }}</li>
-                        </a>
-                    {{ else }}
                         <li>{{ $description }} {{ $duration | formatDuration  }}</li>
-                    {{ end }}
                 {{ end }}
                 </ul>
             </li>
