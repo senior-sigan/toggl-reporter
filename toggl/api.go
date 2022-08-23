@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -172,7 +173,16 @@ func (toggl *TogglData) GetTimeEntriesForWorkspace(startDate time.Time, endDate 
 func (toggl *TogglData) GetTimeEntriesForWorkspaceV2(startDate time.Time, endDate time.Time, workspaceId int) ([]TimeEntry, error) {
 	query := url.Values{}
 	query.Set("since", startDate.Format(DateFormat))
-	query.Add("until", startDate.Format(DateFormat)) // TODO: Sadly this API need start and end date to be the same to generate a daily report
+
+	if startDate.Equal(endDate) {
+		log.Printf("Call API to get daily report")
+		query.Add("until", startDate.Format(DateFormat)) // TODO: Sadly this API need start and end date to be the same to generate a daily report
+
+	} else {
+		log.Printf("Call API to get not daily report")
+		query.Add("until", endDate.Format(DateFormat)) // TODO: Sadly this API need start and end date to be the same to generate a daily report
+
+	}
 	query.Add("workspace_id", strconv.Itoa(workspaceId))
 	query.Add("user_agent", AppName)
 

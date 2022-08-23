@@ -313,6 +313,22 @@ func ShowAchievements(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 	}
 
+	weekday := startDate.Weekday()
+	weekdayInt := int(weekday)
+	if weekdayInt == 0 {
+		//Sunday
+		weekdayInt = 7
+	}
+	diffDay := -1 * (weekdayInt - 1)
+
+	//get report for whole current week
+	weeklyReport, err := reporter.BuildReport(user.WorkspaceId, startDate.AddDate(0, 0, diffDay), startDate.AddDate(0, 0, diffDay+6))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
+	}
+
+	log.Printf("Total duration for week is %v, from %d to %d days", weeklyReport.TotalDuration.Hours(), startDate.AddDate(0, 0, diffDay).Day(), startDate.AddDate(0, 0, diffDay+6).Day())
+
 	me, err := user.Toggl.GetMe()
 	if err != nil {
 		log.Printf("[ERROR] cannot load user info from toggle: %v", err)
@@ -320,7 +336,16 @@ func ShowAchievements(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	achievementsList := achievements.AchievementsList
+	achievementsList := make(map[string]achievements.UserAchievement)
+	for k, v := range achievements.AchievementsList {
+		achievementsList[k] = v
+	}
+
+	if weeklyReport.TotalDuration >= 40*time.Hour {
+		element := achievementsList[achievements.FullTimeWeekAchievement]
+		element.IsUnlocked = true
+		achievementsList[achievements.FullTimeWeekAchievement] = element
+	}
 
 	if dailyReport.TotalDuration >= 8*time.Hour {
 		element := achievementsList[achievements.FullTimeAchievement]
@@ -335,6 +360,18 @@ func ShowAchievements(w http.ResponseWriter, r *http.Request) {
 			achievementsList[achievements.DedicatedWorkerAchievement] = element
 
 			break
+		}
+	}
+
+	for _, project := range weeklyReport.Projects {
+		if project.TotalDuration >= 30*time.Hour {
+			element := achievementsList[achievements.ReallyDedicatedWorkerAchievement]
+			element.IsUnlocked = true
+			achievementsList[achievements.ReallyDedicatedWorkerAchievement] = element
+
+			break
+		} else {
+			log.Printf("week duration for %s is %v", project.Name, project.TotalDuration.Hours())
 		}
 	}
 

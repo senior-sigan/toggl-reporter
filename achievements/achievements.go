@@ -11,8 +11,10 @@ type UserAchievement struct {
 
 //var hardWorkerName string = "HardWorker"
 var FullTimeAchievement string = "Full-Time"
+var FullTimeWeekAchievement string = "Full-Time Week"
 
 var DedicatedWorkerAchievement string = "Dedicated worker"
+var ReallyDedicatedWorkerAchievement = "Really dedicated worker"
 
 var AchievementsList = map[string]UserAchievement{
 	// hardWorkerName: UserAchievement{
@@ -27,11 +29,23 @@ var AchievementsList = map[string]UserAchievement{
 		Condition:            "",
 		ConditionDescription: "working time >= 8 hours for today",
 	},
+	FullTimeWeekAchievement: UserAchievement{
+		Name:                 FullTimeWeekAchievement,
+		IsUnlocked:           false,
+		Condition:            "",
+		ConditionDescription: "working >= 40 hours for this week",
+	},
 	DedicatedWorkerAchievement: UserAchievement{
 		Name:                 DedicatedWorkerAchievement,
 		IsUnlocked:           false,
 		Condition:            "",
 		ConditionDescription: "working at project >= 6 hours for today",
+	},
+	ReallyDedicatedWorkerAchievement: UserAchievement{
+		Name:                 ReallyDedicatedWorkerAchievement,
+		IsUnlocked:           false,
+		Condition:            "",
+		ConditionDescription: "working at project >= 30 hours for a week",
 	},
 }
 
