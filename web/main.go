@@ -59,10 +59,11 @@ type AchievementsPage struct {
 }
 
 type ReportPage struct {
-	Report      report.Report
-	ReportJSON  string
-	FormData    map[string]string
-	RedmineData map[int]map[string]string
+	Report          report.Report
+	ReportJSON      string
+	FormData        map[string]string
+	RedmineData     map[int]map[string]string
+	AchievementsMap map[string]achievements.UserAchievement
 }
 
 func main() {
@@ -74,7 +75,6 @@ func main() {
 	renderer.Register("login", "templates/login.tmpl")
 	renderer.Register("index", "templates/index.tmpl")
 	renderer.Register("workspaces", "templates/workspaces.tmpl")
-	renderer.Register("achievements", "templates/achievements.tmpl")
 
 	formGenerator = forms.GoogleFormGenerator{
 		FormURL:             config.Forms.Google.Params.Url,
@@ -106,14 +106,6 @@ func main() {
 		r.Use(UserOnly)
 		r.Get("/", ShowWorkspaces)
 		r.Post("/", SaveWorkspace)
-		return r
-	}())
-
-	r.Mount("/achievement", func() http.Handler {
-		r := chi.NewRouter()
-		r.Use(UserOnly)
-		r.Use(UserWithWorkspaceOnly)
-		r.Get("/", ShowAchievements)
 		return r
 	}())
 
@@ -277,116 +269,27 @@ func ShowIndex(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 	}
 
-	pageData := ReportPage{
-		Report:      dailyReport,
-		FormData:    formGenerator.ConvertReportToForms(dailyReport),
-		RedmineData: redmineGenerator.BuildRedmineReportForms(dailyReport),
-		ReportJSON:  string(reportJson),
-	}
-
-	renderer.RenderHTML(w, "index", pageData)
-}
-
-func ShowAchievements(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	user, ok := ctx.Value("user").(*User)
-	if !ok {
-		renderer.RenderHTML(w, "login", map[string]string{
-			"Instructions": config.Instructions,
-		})
-		return
-	}
-	startDate := time.Now()
-
-	// here need to extract some achievements
-	// maybe create map/list with achievements, each with it's own request/function to form result
-	// as start - "Project worker" - has project with 30 or more hours for last 7 days
-	// or "Full-Time" - working time >= has tracked 8 hours for today
-
-	reporter := report.Reporter{
-		TogglClient:          user.Toggl,
-		ProjectTimePrecision: time.Duration(config.Reporter.ProjectTimePrecision) * time.Second,
-		TaskTimePrecision:    time.Duration(config.Reporter.TaskTimePrecision) * time.Second,
-	}
-	dailyReport, err := reporter.BuildDailyReport(user.WorkspaceId, startDate)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
-	}
-
-	weekday := startDate.Weekday()
-	weekdayInt := int(weekday)
-	if weekdayInt == 0 {
-		//Sunday
-		weekdayInt = 7
-	}
-	diffDay := -1 * (weekdayInt - 1)
-
-	//get report for whole current week
-	weeklyReport, err := reporter.BuildReport(user.WorkspaceId, startDate.AddDate(0, 0, diffDay), startDate.AddDate(0, 0, diffDay+6))
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
-	}
-
-	log.Printf("Total duration for week is %v, from %d to %d days", weeklyReport.TotalDuration.Hours(), startDate.AddDate(0, 0, diffDay).Day(), startDate.AddDate(0, 0, diffDay+6).Day())
-
-	me, err := user.Toggl.GetMe()
-	if err != nil {
-		log.Printf("[ERROR] cannot load user info from toggle: %v", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
 	achievementsList := make(map[string]achievements.UserAchievement)
 	for k, v := range achievements.AchievementsList {
 		achievementsList[k] = v
 	}
 
-	if weeklyReport.TotalDuration >= 40*time.Hour {
-		element := achievementsList[achievements.FullTimeWeekAchievement]
-		element.IsUnlocked = true
-		achievementsList[achievements.FullTimeWeekAchievement] = element
-	}
-
-	if dailyReport.TotalDuration >= 8*time.Hour {
-		element := achievementsList[achievements.FullTimeAchievement]
-		element.IsUnlocked = true
-		achievementsList[achievements.FullTimeAchievement] = element
-	}
-
-	for _, project := range dailyReport.Projects {
-		if project.TotalDuration >= 6*time.Hour {
-			element := achievementsList[achievements.DedicatedWorkerAchievement]
-			element.IsUnlocked = true
-			achievementsList[achievements.DedicatedWorkerAchievement] = element
-
-			break
+	for _, achievement := range achievementsList {
+		if achievement.CheckCommand(dailyReport) {
+			achievement.IsUnlocked = true
+			achievementsList[achievement.Name] = achievement
 		}
 	}
 
-	for _, project := range weeklyReport.Projects {
-		if project.TotalDuration >= 30*time.Hour {
-			element := achievementsList[achievements.ReallyDedicatedWorkerAchievement]
-			element.IsUnlocked = true
-			achievementsList[achievements.ReallyDedicatedWorkerAchievement] = element
-
-			break
-		} else {
-			log.Printf("week duration for %s is %v", project.Name, project.TotalDuration.Hours())
-		}
-	}
-
-	reportJson, err := json.Marshal(dailyReport)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
-	}
-
-	pageData := AchievementsPage{
-		User:            me,
-		At:              startDate,
+	pageData := ReportPage{
+		Report:          dailyReport,
+		FormData:        formGenerator.ConvertReportToForms(dailyReport),
+		RedmineData:     redmineGenerator.BuildRedmineReportForms(dailyReport),
 		AchievementsMap: achievementsList,
 		ReportJSON:      string(reportJson),
 	}
-	renderer.RenderHTML(w, "achievements", pageData)
+
+	renderer.RenderHTML(w, "index", pageData)
 }
 
 func ShowLogin(w http.ResponseWriter, r *http.Request) {

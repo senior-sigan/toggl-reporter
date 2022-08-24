@@ -1,54 +1,43 @@
 package achievements
 
-import "goreporter/toggl"
+import (
+	"goreporter/report"
+	"time"
+)
 
 type UserAchievement struct {
 	Name                 string
 	IsUnlocked           bool
-	Condition            string
+	CheckCommand         func(report report.Report) bool
 	ConditionDescription string
+	ImagePath            string
 }
 
-//var hardWorkerName string = "HardWorker"
-var FullTimeAchievement string = "Full-Time"
-var FullTimeWeekAchievement string = "Full-Time Week"
-
-var DedicatedWorkerAchievement string = "Dedicated worker"
-var ReallyDedicatedWorkerAchievement = "Really dedicated worker"
+var TimeWizardAchievement string = "TimeWizard"
+var TimeTurnerAchievement = "Time-Turner"
 
 var AchievementsList = map[string]UserAchievement{
-	// hardWorkerName: UserAchievement{
-	// 	Name:                 hardWorkerName,
-	// 	IsUnlocked:           false,
-	// 	Condition:            "",
-	// 	ConditionDescription: "working time >= 10 hours for 7 days",
-	// },
-	FullTimeAchievement: UserAchievement{
-		Name:                 FullTimeAchievement,
+	TimeWizardAchievement: UserAchievement{
+		Name:                 TimeWizardAchievement,
 		IsUnlocked:           false,
-		Condition:            "",
-		ConditionDescription: "working time >= 8 hours for today",
+		ConditionDescription: "No Time to Stop: Tracked >= 20 hours",
+		CheckCommand:         checkTimeWizard,
+		ImagePath:            "/static/images/timeWizard.png",
 	},
-	FullTimeWeekAchievement: UserAchievement{
-		Name:                 FullTimeWeekAchievement,
+	TimeTurnerAchievement: UserAchievement{
+		Name:                 TimeTurnerAchievement,
 		IsUnlocked:           false,
-		Condition:            "",
-		ConditionDescription: "working >= 40 hours for this week",
-	},
-	DedicatedWorkerAchievement: UserAchievement{
-		Name:                 DedicatedWorkerAchievement,
-		IsUnlocked:           false,
-		Condition:            "",
-		ConditionDescription: "working at project >= 6 hours for today",
-	},
-	ReallyDedicatedWorkerAchievement: UserAchievement{
-		Name:                 ReallyDedicatedWorkerAchievement,
-		IsUnlocked:           false,
-		Condition:            "",
-		ConditionDescription: "working at project >= 30 hours for a week",
+		ConditionDescription: "Time-Turner: Tracked 2 events with colliding time of 5+ minutes",
+		CheckCommand:         checkTimeTurner,
+		ImagePath:            "/static/images/timeTurner.jpg",
 	},
 }
 
-func (ua *UserAchievement) CheckIfUnlocked(toggl toggl.Toggl, workspaceId int) bool {
-	return false
+func checkTimeTurner(report report.Report) bool {
+	return true
+}
+
+func checkTimeWizard(report report.Report) bool {
+	return report.TotalDuration >= 20*time.Hour
+	//return true
 }
