@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -175,11 +174,11 @@ func (toggl *TogglData) GetTimeEntriesForWorkspaceV2(startDate time.Time, endDat
 	query.Set("since", startDate.Format(DateFormat))
 
 	if startDate.Equal(endDate) {
-		log.Printf("Call API to get daily report")
+		//log.Printf("Call API to get daily report")
 		query.Add("until", startDate.Format(DateFormat)) // TODO: Sadly this API need start and end date to be the same to generate a daily report
 
 	} else {
-		log.Printf("Call API to get not daily report")
+		//log.Printf("Call API to get not daily report")
 		query.Add("until", endDate.Format(DateFormat)) // TODO: Sadly this API need start and end date to be the same to generate a daily report
 
 	}
