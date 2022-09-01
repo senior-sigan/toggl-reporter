@@ -264,6 +264,11 @@ func ShowIndex(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 	}
 
+	weeklyReport, err := reporter.BuildReport(user.WorkspaceId, startDate.AddDate(0, 0, -7), startDate)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
+	}
+
 	reportJson, err := json.Marshal(dailyReport)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
@@ -276,6 +281,9 @@ func ShowIndex(w http.ResponseWriter, r *http.Request) {
 
 	for _, achievement := range achievementsList {
 		if achievement.CheckCommand(dailyReport) {
+			achievement.IsUnlocked = true
+			achievementsList[achievement.Name] = achievement
+		} else if achievement.CheckWeeklyCommand(weeklyReport) {
 			achievement.IsUnlocked = true
 			achievementsList[achievement.Name] = achievement
 		}
