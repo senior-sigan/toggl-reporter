@@ -5,9 +5,6 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
-	"github.com/BurntSushi/toml"
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 	"goreporter/forms"
 	"goreporter/redmine"
 	"goreporter/report"
@@ -16,6 +13,10 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/BurntSushi/toml"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 //go:embed static/*
@@ -32,7 +33,12 @@ var config Config
 const (
 	CookieToken     = "togglToken"
 	CookieWorkspace = "togglWorkspaceID"
+	CookieMaxAge    = 2592000
 )
+
+type ContextKey int
+
+const userContextKey ContextKey = 1
 
 type User struct {
 	Toggl       toggl.Toggl
@@ -132,7 +138,7 @@ func MustHaveDateParam(next http.Handler) http.Handler {
 func UserWithWorkspaceOnly(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		user, ok := ctx.Value("user").(*User)
+		user, ok := ctx.Value(userContextKey).(*User)
 		if !ok {
 			log.Printf("[EROR] cannot marshall User from context")
 			http.Error(w, http.StatusText(500), 500)
@@ -168,7 +174,7 @@ func UserOnly(next http.Handler) http.Handler {
 			}
 		}
 
-		ctx := context.WithValue(r.Context(), "user", &User{
+		ctx := context.WithValue(r.Context(), userContextKey, &User{
 			Toggl:       toggl.NewToggl(token),
 			WorkspaceId: workspaceID,
 		})
@@ -177,7 +183,7 @@ func UserOnly(next http.Handler) http.Handler {
 }
 
 func ShowWorkspaces(w http.ResponseWriter, r *http.Request) {
-	user, ok := r.Context().Value("user").(*User)
+	user, ok := r.Context().Value(userContextKey).(*User)
 	if !ok {
 		log.Println("[ERROR] cannot get user from context")
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -211,16 +217,16 @@ func SaveWorkspace(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
 		Name:   CookieWorkspace,
 		Value:  workspaceID,
-		MaxAge: 2592000,
+		MaxAge: CookieMaxAge,
 		Secure: true,
 	})
 
-	http.Redirect(w, r, "/", 303)
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
 func ShowIndex(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	user, ok := ctx.Value("user").(*User)
+	user, ok := ctx.Value(userContextKey).(*User)
 	if !ok {
 		renderer.RenderHTML(w, "login", map[string]string{
 			"Instructions": config.Instructions,
@@ -279,16 +285,16 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 	pwd := r.FormValue("password")
 
 	if pwd != config.Password {
-		http.Error(w, http.StatusText(401), 401)
+		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		return
 	}
 
 	http.SetCookie(w, &http.Cookie{
 		Name:   CookieToken,
 		Value:  token,
-		MaxAge: 2592000,
+		MaxAge: CookieMaxAge,
 		Secure: true,
 	})
 
-	http.Redirect(w, r, "/", 303)
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }

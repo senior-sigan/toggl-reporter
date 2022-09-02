@@ -114,12 +114,7 @@ func (reporter *Reporter) injectProjectNames(report *Report) error {
 }
 
 func addTime(block TasksBlock, entry toggl.TimeEntry, precision time.Duration) TasksBlock {
-	if _, ok := block.Tasks[entry.Description]; ok {
-		block.Tasks[entry.Description] += utils.RoundTime(entry.Duration, precision)
-	} else {
-		block.Tasks[entry.Description] = utils.RoundTime(entry.Duration, precision)
-	}
-
+	block.Tasks[entry.Description] += utils.RoundTime(entry.Duration, precision)
 	return block
 }
 

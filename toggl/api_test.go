@@ -2,7 +2,6 @@ package toggl
 
 import (
 	"fmt"
-	"log"
 	"net/url"
 	"os"
 	"testing"
@@ -23,9 +22,6 @@ func (h *FakeHandler) Execute(method string, query url.Values, response interfac
 
 func TestMain(m *testing.M) {
 	token = os.Getenv("TOGGLE_TOKEN")
-	if token == "" {
-		log.Fatal("TOGGLE_TOKEN must be set")
-	}
 	startDate = time.Date(2022, 7, 1, 0, 0, 0, 0, time.UTC)
 	endDate = time.Date(2022, 7, 2, 0, 0, 0, 0, time.UTC)
 
@@ -34,6 +30,9 @@ func TestMain(m *testing.M) {
 }
 
 func TestToggle_GetMe(t *testing.T) {
+	if len(token) == 0 {
+		t.Skip("Token is not set")
+	}
 	toggle := NewToggl(token)
 	me, err := toggle.GetMe()
 	if err != nil {
@@ -43,6 +42,9 @@ func TestToggle_GetMe(t *testing.T) {
 }
 
 func TestToggle_GetWorkspaces(t *testing.T) {
+	if len(token) == 0 {
+		t.Skip("Token is not set")
+	}
 	toggle := NewToggl(token)
 	workspaces, err := toggle.GetWorkspaces()
 	if err != nil {
@@ -52,6 +54,9 @@ func TestToggle_GetWorkspaces(t *testing.T) {
 }
 
 func TestToggle_GetTimeEntries(t *testing.T) {
+	if len(token) == 0 {
+		t.Skip("Token is not set")
+	}
 	toggle := NewToggl(token)
 	entries, err := toggle.GetTimeEntries(startDate, endDate)
 	if err != nil {
@@ -61,6 +66,9 @@ func TestToggle_GetTimeEntries(t *testing.T) {
 }
 
 func TestToggle_GetTimeEntriesForWorkspace_EmptyLen(t *testing.T) {
+	if len(token) == 0 {
+		t.Skip("Token is not set")
+	}
 	toggle := NewToggl(token)
 	entries, err := toggle.GetTimeEntriesForWorkspace(startDate, endDate, -1)
 	if err != nil {
@@ -73,6 +81,9 @@ func TestToggle_GetTimeEntriesForWorkspace_EmptyLen(t *testing.T) {
 }
 
 func TestToggle_GetTimeEntriesForWorkspace(t *testing.T) {
+	if len(token) == 0 {
+		t.Skip("Token is not set")
+	}
 	toggle := NewToggl(token)
 	entries, err := toggle.GetTimeEntriesForWorkspace(startDate, endDate, 2200006)
 	if err != nil {
@@ -86,6 +97,9 @@ func TestToggle_GetTimeEntriesForWorkspace(t *testing.T) {
 }
 
 func TestToggl_GetProjects(t *testing.T) {
+	if len(token) == 0 {
+		t.Skip("Token is not set")
+	}
 	toggl := NewToggl(token)
 	projects, err := toggl.GetProjects(2200006)
 	if err != nil {
@@ -95,6 +109,9 @@ func TestToggl_GetProjects(t *testing.T) {
 }
 
 func TestTogglData_GetTimeEntriesForWorkspaceV2(t *testing.T) {
+	if len(token) == 0 {
+		t.Skip("Token is not set")
+	}
 	toggl := NewToggl(token)
 	startDate = time.Date(2022, 8, 5, 0, 0, 0, 0, time.UTC)
 	endDate = time.Date(2022, 8, 6, 0, 0, 0, 0, time.UTC)

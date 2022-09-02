@@ -20,14 +20,14 @@ func FindTaskId(description string) (int, bool) {
 	re2 := regexp.MustCompile(`\s+#(\d+)\s+`) // Task #42 description
 
 	groups1 := re1.FindStringSubmatch(description)
-	if groups1 != nil && len(groups1) >= 2 {
+	if len(groups1) >= 2 {
 		if taskIdx, err := strconv.Atoi(groups1[1]); err == nil {
 			return taskIdx, true
 		}
 	}
 
 	groups2 := re2.FindStringSubmatch(description)
-	if groups2 != nil && len(groups2) >= 2 {
+	if len(groups2) >= 2 {
 		if taskIdx, err := strconv.Atoi(groups2[1]); err == nil {
 			return taskIdx, true
 		}
