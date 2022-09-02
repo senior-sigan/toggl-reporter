@@ -122,8 +122,6 @@ func checkTimeTurner(report report.Report) bool {
 
 			if maxCollision, ok := utils.CheckMaxTimeCollision(start_timeA, end_timeA, start_timeB, end_timeB); ok && maxCollision >= 5*time.Minute {
 				return true
-			} else if ok {
-				//log.Printf("Not achieved - max collision for events is %v", maxCollision)
 			}
 		}
 	}
