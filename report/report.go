@@ -57,7 +57,12 @@ func newReport(at time.Time, workspaceId int) Report {
 }
 
 func (reporter *Reporter) BuildDailyReport(workspaceId int, startDate time.Time) (Report, error) {
-	endDate := startDate.Add(time.Duration(24) * time.Hour)
+
+	// Only place where endDate used - to get details from API; here it not used, since needs to be the same as startDate
+	// Change logic here to be able to grab weekly reports as well
+	//endDate := startDate.Add(time.Duration(24) * time.Hour)
+
+	endDate := startDate
 	return reporter.BuildReport(workspaceId, startDate, endDate)
 }
 

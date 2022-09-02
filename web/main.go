@@ -5,6 +5,7 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
+	"goreporter/achievements"
 	"goreporter/forms"
 	"goreporter/redmine"
 	"goreporter/report"
@@ -50,11 +51,19 @@ type WorkspacesPage struct {
 	Workspaces []toggl.Workspace
 }
 
+type AchievementsPage struct {
+	ReportJSON      string
+	At              time.Time
+	User            toggl.Me
+	AchievementsMap map[string]achievements.UserAchievement
+}
+
 type ReportPage struct {
-	Report      report.Report
-	ReportJSON  string
-	FormData    map[string]string
-	RedmineData map[int]map[string]string
+	Report          report.Report
+	ReportJSON      string
+	FormData        map[string]string
+	RedmineData     map[int]map[string]string
+	AchievementsMap map[string]achievements.UserAchievement
 }
 
 func main() {
@@ -62,7 +71,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
 	renderer = NewRenderer(&templatesFS)
 	renderer.Register("login", "templates/login.tmpl")
 	renderer.Register("index", "templates/index.tmpl")
@@ -110,13 +118,14 @@ func main() {
 		return r
 	}())
 
-	fmt.Printf("Listening to http://%v", config.Addr)
+	fmt.Printf("Listening to http://%v\n", config.Addr)
 	err = http.ListenAndServe(config.Addr, r)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
+// here is source of problem with 307 redirect
 func MustHaveDateParam(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		dateStr := r.URL.Query().Get("date")
@@ -255,16 +264,37 @@ func ShowIndex(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 	}
 
+	weeklyReport, err := reporter.BuildReport(user.WorkspaceId, startDate.AddDate(0, 0, -7), startDate)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
+	}
+
 	reportJson, err := json.Marshal(dailyReport)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 	}
 
+	achievementsList := make(map[string]achievements.UserAchievement)
+	for k, v := range achievements.AchievementsList {
+		achievementsList[k] = v
+	}
+
+	for _, achievement := range achievementsList {
+		if achievement.CheckCommand(dailyReport) {
+			achievement.IsUnlocked = true
+			achievementsList[achievement.Name] = achievement
+		} else if achievement.CheckWeeklyCommand(weeklyReport) {
+			achievement.IsUnlocked = true
+			achievementsList[achievement.Name] = achievement
+		}
+	}
+
 	pageData := ReportPage{
-		Report:      dailyReport,
-		FormData:    formGenerator.ConvertReportToForms(dailyReport),
-		RedmineData: redmineGenerator.BuildRedmineReportForms(dailyReport),
-		ReportJSON:  string(reportJson),
+		Report:          dailyReport,
+		FormData:        formGenerator.ConvertReportToForms(dailyReport),
+		RedmineData:     redmineGenerator.BuildRedmineReportForms(dailyReport),
+		AchievementsMap: achievementsList,
+		ReportJSON:      string(reportJson),
 	}
 
 	renderer.RenderHTML(w, "index", pageData)
