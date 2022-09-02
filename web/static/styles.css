@@ -61,3 +61,7 @@ a:visited {
     opacity: 1;
     visibility: visible;
 }
+
+div#report {
+    max-width: 800px;
+}
