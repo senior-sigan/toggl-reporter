@@ -134,17 +134,18 @@ func checkTimeWizard(report report.Report) bool {
 
 //Check that current date (At) is during previous week from current day
 func checkLongTimeNoSee(report report.Report) bool {
-	timeNow := time.Now()
+	year, month, day := time.Now().Date()
+	timeStartOfDay := time.Date(year, month, day, 0, 0, 0, 0, time.Now().Location())
 	// need to shift to Sunday of last week, then add 7 days before
-	timeday := timeNow.Weekday()
+	timeday := timeStartOfDay.Weekday()
 	// 0 - Sunday
 	if timeday == 0 {
 		timeday = 7
 	}
 	totalShift := int(timeday) + 7
 
-	timeLastWeekBefore := timeNow.AddDate(0, 0, -1*totalShift)
-	timeThisWeekStart := timeNow.AddDate(0, 0, -1*int(timeday)+1)
+	timeLastWeekBefore := timeStartOfDay.AddDate(0, 0, -1*totalShift)
+	timeThisWeekStart := timeStartOfDay.AddDate(0, 0, -1*int(timeday)+1)
 
 	return report.At.After(timeLastWeekBefore) && report.At.Before(timeThisWeekStart)
 }
