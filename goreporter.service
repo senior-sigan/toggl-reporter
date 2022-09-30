@@ -1,0 +1,19 @@
+[Unit]
+Description=Reporter Service
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/root
+ExecStart=/root/goreporter
+
+Restart=on-failure
+RestartSec=10
+
+
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=reporter
+
+[Install]
+WantedBy=multi-user.target
