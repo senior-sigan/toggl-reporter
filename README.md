@@ -5,8 +5,13 @@
 ## How to build 
 
 1. Copy config.example.toml into config.toml
-2. Build project with make
-3. 
+2. Set variables in config.toml
+3. Build project with make
+
+## How to launch
+
+1. Launch the binary
+2. Open page on address defined in `addr` config param (e.g localhost:8000)
 
 
 ## How to make new page

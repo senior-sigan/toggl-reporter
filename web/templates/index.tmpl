@@ -1,8 +1,18 @@
 {{ define "content" }}
 
-<a href='/logout'>Logout</a>
+<script>
+function addUrlParameter(name, value) {
+  var searchParams = new URLSearchParams(window.location.search)
+  searchParams.set(name, value)
+  window.location.search = searchParams.toString()
+}
+</script>
 
+<a href='/logout'>Logout</a>
 <br>
+<button class="action_button" href onclick="addUrlParameter('action', 'prev')">Prev</button>
+<button class="action_button" href onclick="addUrlParameter('action', 'next')">Next</button>
+<button class="action_button" href onclick="addUrlParameter('action', 'today')">Today</button>
 
 <div class="report-page">
 <div id='report' data-report-data={{ .ReportJSON }} >

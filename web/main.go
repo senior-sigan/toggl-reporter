@@ -114,6 +114,7 @@ func main() {
 		r.Use(UserOnly)
 		r.Use(UserWithWorkspaceOnly)
 		r.Use(MustHaveDateParam)
+		r.Use(CheckAction)
 		r.Get("/", ShowIndex)
 		return r
 	}())
@@ -123,6 +124,49 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func CheckAction(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		actionStr := r.URL.Query().Get("action")
+		switch actionStr {
+		case "next":
+			dateStr := r.URL.Query().Get("date")
+			if dateStr != "" {
+				date, err := time.Parse("2006-01-02", dateStr)
+				if err == nil {
+					dateNew := date.AddDate(0, 0, 1)
+					u := fmt.Sprintf("/?date=%s", dateNew.Format("2006-01-02"))
+					http.Redirect(w, r, u, http.StatusTemporaryRedirect)
+				} else {
+					log.Printf("[ERROR] during action next: cannot parse date str '%v': %v", dateStr, err)
+				}
+			} else {
+				next.ServeHTTP(w, r)
+			}
+		case "prev":
+			dateStr := r.URL.Query().Get("date")
+			if dateStr != "" {
+				date, err := time.Parse("2006-01-02", dateStr)
+				if err == nil {
+					dateNew := date.AddDate(0, 0, -1)
+					u := fmt.Sprintf("/?date=%s", dateNew.Format("2006-01-02"))
+					http.Redirect(w, r, u, http.StatusTemporaryRedirect)
+				} else {
+					log.Printf("[ERROR] during action prev: cannot parse date str '%v': %v", dateStr, err)
+				}
+			} else {
+				next.ServeHTTP(w, r)
+			}
+		case "today":
+			date := time.Now()
+			u := fmt.Sprintf("/?date=%s", date.Format("2006-01-02"))
+			http.Redirect(w, r, u, http.StatusTemporaryRedirect)
+		default:
+			next.ServeHTTP(w, r)
+		}
+
+	})
 }
 
 // here is source of problem with 307 redirect

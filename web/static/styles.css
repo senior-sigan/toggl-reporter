@@ -28,6 +28,10 @@ a:visited {
     flex-direction: row;
 }
 
+.action_button {
+    display: inline-block;
+}
+
 .achievement-block {
     list-style: none;
 }
