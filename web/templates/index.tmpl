@@ -1,8 +1,9 @@
 {{ define "content" }}
 
-<a href='/logout'>Logout</a>
-
-<br>
+<div class="header">
+    <input type="date" id="report-date-selector" name="date">
+    <button type="submit" class='login-btn' formaction="/logout" formmethod="post">Logout</button>
+</div>
 
 <div class="report-page">
 <div id='report' data-report-data={{ .ReportJSON }} >
