@@ -65,3 +65,13 @@ a:visited {
 div#report {
     max-width: 800px;
 }
+
+.header {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+}
+
+#report-date-selector {
+    margin-right: auto;
+}
