@@ -8,6 +8,20 @@
     }   
 }
 
+button {
+    margin: 0;
+}
+
+body {
+    background-color: lavender;
+}
+
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: var(--background);
+    }
+}
+
 a:visited {
     text-decoration: none;
     color: #00457a;
@@ -22,48 +36,62 @@ a:visited {
     }
   }
 
+h2 {
+    margin-top: 0
+}
+
+input {
+    background-color: var(--button-base);
+}
 
 .report-page {
-    display: flex;
-    flex-direction: row;
+    padding: 0 10px;
+}
+
+.achievements {
+    max-width: 350px;
+    position: absolute;
+    right: 20px;
 }
 
 .achievement-block {
+    border-radius: 15px;
+    padding: 0;
+    margin-bottom: 15px;
+    background-color: lightsteelblue;
     list-style: none;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
 }
 
-.achievement-block_image {
+@media (prefers-color-scheme: dark) {
+    .achievement-block {
+        background-color: darkslategray;
+    }
+}
+
+.achievement-block__image {
     display: inline-block;
-}
-.achievement-block_wrapper {
-    display: inline-block;
+    background-color: white;
+    border-radius: 10px;
+    padding: 10px;
+    margin: 5px;
 }
 
-.achievement-block_wrapper::after {
-    content: attr(data-hover);
-    visibility: hidden;
-    opacity: 0;
-    width: max-content;
-    background-color: black;
-    color: #fff;
-    text-align: center;
-    border-radius: 5px;
-    padding: 5px 0;
-    transition: opacity 1s ease-in-out;
-  
-    position: relative;
-    z-index: 1;
-    left: 0;
-    bottom: 110%;
-  }
+.achievement-block__description {
+    display: flex;
+    flex-direction: column;
+    padding: 10px 15px;
+}
 
-.achievement-block_wrapper:hover::after {
-    opacity: 1;
-    visibility: visible;
+.achievement-block__description_name {
+    font-weight: bold;
+    margin-bottom: 5px;
 }
 
 div#report {
-    max-width: 800px;
+    width: 100%;
 }
 
 .header {
@@ -74,4 +102,18 @@ div#report {
 
 #report-date-selector {
     margin-right: auto;
+}
+
+.entry {
+    margin-top: 20px;
+    padding: 10px 15px;
+    padding-bottom: 2px;
+    background-color: var(--background-alt);
+    border-radius: 10px;
+}
+
+.report-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
 }
