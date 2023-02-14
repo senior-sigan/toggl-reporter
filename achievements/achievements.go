@@ -12,6 +12,7 @@ import (
 
 type UserAchievement struct {
 	Name                 string
+	DescriptionName      string
 	IsUnlocked           bool
 	CheckCommand         func(report report.Report) bool
 	CheckWeeklyCommand   func(report report.Report) bool
@@ -32,57 +33,64 @@ var FilleanAchievement = "FilleanAchievement"
 var AchievementsList = map[string]UserAchievement{
 	TimeWizardAchievement: UserAchievement{
 		Name:                 TimeWizardAchievement,
+		DescriptionName:      "Space Worker",
 		IsUnlocked:           false,
-		ConditionDescription: "Space Worker - Tracked >= 20 hours today",
+		ConditionDescription: "Tracked >= 20 hours today",
 		CheckCommand:         checkTimeWizard,
 		CheckWeeklyCommand:   returnFalseCheck,
 		ImagePath:            "/static/images/timeWizard.svg",
 	},
 	TimeTurnerAchievement: UserAchievement{
 		Name:                 TimeTurnerAchievement,
+		DescriptionName:      "Time-Turner",
 		IsUnlocked:           false,
-		ConditionDescription: "Time-Turner - Tracked 2 events with colliding time of 5+ minutes today",
+		ConditionDescription: "Tracked 2 events with colliding time of 5+ minutes today",
 		CheckCommand:         checkTimeTurner,
 		CheckWeeklyCommand:   returnFalseCheck,
 		ImagePath:            "/static/images/timeTurner.svg",
 	},
 	LongTimeNoSeeAchievement: UserAchievement{
 		Name:                 LongTimeNoSeeAchievement,
+		DescriptionName:      "Where did I put my report?",
 		IsUnlocked:           false,
-		ConditionDescription: "Where did I put my report? - Opened report page at previous week",
+		ConditionDescription: "Opened report page at previous week",
 		CheckCommand:         checkLongTimeNoSee,
 		CheckWeeklyCommand:   returnFalseCheck,
 		ImagePath:            "/static/images/longTimeNoSee.svg",
 	},
 	IsItSalaryTimeAlreadyAchievement: UserAchievement{
 		Name:                 IsItSalaryTimeAlreadyAchievement,
+		DescriptionName:      "Is It Salary Time Already?",
 		IsUnlocked:           false,
-		ConditionDescription: "Is It Salary Time Already? - Opened report page at two weeks before",
+		ConditionDescription: "Opened report page at two weeks before",
 		CheckCommand:         checkIsItSalaryTimeAlready,
 		CheckWeeklyCommand:   returnFalseCheck,
 		ImagePath:            "/static/images/isItSalaryTimeAlready.svg",
 	},
 	TypeYourTextHereAchievement: UserAchievement{
 		Name:                 TypeYourTextHereAchievement,
+		DescriptionName:      "Type Your Text Here",
 		IsUnlocked:           false,
-		ConditionDescription: "Type Your Text Here - Have 1+ event tracked with no message for today",
+		ConditionDescription: "Have 1+ event tracked with no message for today",
 		CheckCommand:         checkTypeYourTextHere,
 		CheckWeeklyCommand:   returnFalseCheck,
 		ImagePath:            "/static/images/typeYourTextHere.svg",
 	},
 	LongRestAchievement: UserAchievement{
 		Name:                 LongRestAchievement,
+		DescriptionName:      "Ghost in a Tracker",
 		IsUnlocked:           false,
-		ConditionDescription: "Ghost in a Tracker - Have no events tracked for 7 days (excluding today)",
+		ConditionDescription: "Have no events tracked for 7 days (excluding today)",
 		CheckCommand:         returnFalseCheck,
 		CheckWeeklyCommand:   checkLongRestWeekly,
 		ImagePath:            "/static/images/longRest.svg",
 	},
 	HollowMemeAchievement: UserAchievement{
 		Name:       HollowMemeAchievement,
+		DescriptionName:      "May I have some treat :-)?",
 		IsUnlocked: false,
 		//Hidden condition: Enter tracker from 31 October to 2 November after 19:00
-		ConditionDescription: "May I have some treat :-)? Or you prefer empty report sheet?",
+		ConditionDescription: "Or you prefer empty report sheet?",
 		CheckCommand:         checkHollowMeme,
 		CheckWeeklyCommand:   returnFalseCheck,
 		ImagePath:            "/static/images/hollowMeme.svg",
@@ -90,6 +98,7 @@ var AchievementsList = map[string]UserAchievement{
 	YearAchievement: UserAchievement{
 		Name:       YearAchievement,
 		IsUnlocked: false,
+		DescriptionName:      "Happy New Year!",
 		//Hidden condition: Enter tracker from 31 December after 19:00
 		ConditionDescription: "Let's go celebrate and have some presents!",
 		CheckCommand:         checkYear,
@@ -98,9 +107,10 @@ var AchievementsList = map[string]UserAchievement{
 	},
 	FilleanAchievement: UserAchievement{
 		Name:       FilleanAchievement,
+		DescriptionName:      "O'rly?",
 		IsUnlocked: false,
 		//Hidden condition: Tracked on Fillean project today
-		ConditionDescription: "O'rly?",
+		ConditionDescription: "Fillean moment",
 		CheckCommand:         checkFillean,
 		CheckWeeklyCommand:   returnFalseCheck,
 		ImagePath:            "/static/images/fillean.svg",
