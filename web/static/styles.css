@@ -1,10 +1,12 @@
 :root {
-    --links-visited: #00457a;
+    --links-visited: darkslateblue;
+    --links: slateblue;
 }
 
 @media (prefers-color-scheme: dark) {
     :root {
-        --links-visited: #2792c3;
+        --links: cornflowerblue;
+        --links-visited: mediumpurple;
     }   
 }
 
@@ -63,6 +65,9 @@ input {
     display: flex;
     flex-direction: row;
     align-items: center;
+    border: 2px solid;
+    border-bottom: 5px solid;
+    border-color: black;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -102,6 +107,11 @@ div#report {
 
 #report-date-selector {
     margin-right: auto;
+    background-color: var(--background-alt);
+    color: var(--text-bright);
+    border: 2px solid var(--text-bright);
+    font-weight: bold;
+    border-color: black;
 }
 
 .entry {
@@ -110,10 +120,19 @@ div#report {
     padding-bottom: 2px;
     background-color: var(--background-alt);
     border-radius: 10px;
+    border: 2px solid;
+    border-bottom: 5px solid;
+    border-color: black;
 }
 
 .report-header {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+}
+
+.login-btn {
+    background-color: var(--text-bright);
+    color: var(--background);
+    font-weight: bold;
 }
