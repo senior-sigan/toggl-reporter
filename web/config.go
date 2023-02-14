@@ -16,7 +16,7 @@ type Config struct {
 			}
 		}
 		Redmine struct {
-			Url string
+			Urls map[string]string
 		}
 	}
 }

@@ -2,8 +2,8 @@ addr = "0.0.0.0:8000"
 password = "password"
 instructions = "http://example.com"
 
-[forms.redmine]
-url = "https://www.redmine.org/"
+[forms.redmine.urls]
+default = "https://www.redmine.org/"
 
 [forms.google.mapping]
 project_name = "entry.2004201849"

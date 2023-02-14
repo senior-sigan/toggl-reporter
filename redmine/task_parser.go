@@ -11,7 +11,7 @@ import (
 )
 
 type ReportGenerator struct {
-	BaseUrl string
+	UrlMap map[string]string
 }
 
 // FindTaskId Finds task ID in the string "Task #42: description" or "42: description".
@@ -69,13 +69,21 @@ func BuildRedmineUrl(baseUrl string, id int, comment string, duration time.Durat
 	return u.String()
 }
 
+func (form *ReportGenerator) GetUrl(project string) string {
+	ret := form.UrlMap[project]
+	if ret == "" {
+		ret = form.UrlMap["default"]
+	}
+	return ret
+}
+
 func (form *ReportGenerator) BuildRedmineReportForms(report report.Report) map[int]map[string]string {
 	rreport := make(map[int]map[string]string)
 	for projectID, project := range report.Projects {
 		tasks := make(map[string]string)
 		for task, duration := range project.Paid.Tasks {
 			if idx, ok := FindTaskId(task); ok {
-				tasks[task] = BuildRedmineUrl(form.BaseUrl, idx, task, duration, report.At)
+				tasks[task] = BuildRedmineUrl(form.GetUrl(project.Name), idx, task, duration, report.At)
 			}
 		}
 		rreport[projectID] = tasks

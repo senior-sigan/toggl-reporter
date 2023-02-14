@@ -84,7 +84,7 @@ func main() {
 	}
 
 	redmineGenerator = redmine.ReportGenerator{
-		BaseUrl: config.Forms.Redmine.Url,
+		UrlMap:  config.Forms.Redmine.Urls,
 	}
 
 	r := chi.NewRouter()
