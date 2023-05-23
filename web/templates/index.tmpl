@@ -49,14 +49,14 @@
             <li>
                 <p>Paid {{ $project.Paid.Duration | formatDuration  }}</p>
                 <ul>
-                {{ range $description, $duration := $project.Paid.Tasks }}
-                    {{- $redmineForm := index $redmineProject $description -}}
+                {{ range $task := $project.Paid.Tasks }}
+                    {{- $redmineForm := index $redmineProject $task.Text -}}
                     {{- if $redmineForm -}}
                         <a href="{{ $redmineForm }}" target="_blank">
-                            <li>{{ $description }} {{ $duration | formatDuration  }}</li>
+                            <li>{{ $task.Text }} {{ $task.Duration | formatDuration  }}</li>
                         </a>
                     {{ else }}
-                        <li>{{ $description }} {{ $duration | formatDuration  }}</li>
+                        <li>{{ $task.Text }} {{ $task.Duration | formatDuration  }}</li>
                     {{ end }}
                 {{ end }}
                 </ul>
@@ -66,8 +66,8 @@
             <li>
                 <p>Non-Paid {{ $project.NonPaid.Duration | formatDuration  }}</p>
                 <ul>
-                {{ range $description, $duration := $project.NonPaid.Tasks }}
-                    <li>{{ $description }} {{ $duration | formatDuration  }}</li>
+                {{ range $task := $project.NonPaid.Tasks }}
+                    <li>{{ $task.Text }} {{ $task.Duration | formatDuration  }}</li>
                 {{ end }}
                 </ul>
             </li>

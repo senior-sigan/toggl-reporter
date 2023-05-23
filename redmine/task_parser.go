@@ -81,9 +81,9 @@ func (form *ReportGenerator) BuildRedmineReportForms(report report.Report) map[i
 	rreport := make(map[int]map[string]string)
 	for projectID, project := range report.Projects {
 		tasks := make(map[string]string)
-		for task, duration := range project.Paid.Tasks {
-			if idx, ok := FindTaskId(task); ok {
-				tasks[task] = BuildRedmineUrl(form.GetUrl(project.Name), idx, task, duration, report.At)
+		for _, task := range project.Paid.Tasks {
+			if idx, ok := FindTaskId(task.Text); ok {
+				tasks[task.Text] = BuildRedmineUrl(form.GetUrl(project.Name), idx, task.Text, task.Duration, report.At)
 			}
 		}
 		rreport[projectID] = tasks
