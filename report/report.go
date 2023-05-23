@@ -3,6 +3,7 @@ package report
 import (
 	"goreporter/toggl"
 	"goreporter/utils"
+	"sort"
 	"strconv"
 	"time"
 )
@@ -16,15 +17,22 @@ type Report struct {
 }
 
 type Project struct {
-	Name          string
-	NonPaid       TasksBlock
-	Paid          TasksBlock
-	TotalDuration time.Duration
+	Name          string        `json:"name"`
+	NonPaid       TasksBlock    `json:"nonPaid"`
+	Paid          TasksBlock    `json:"paid"`
+	TotalDuration time.Duration `json:"totalDuration"`
+}
+
+type TaskEntry struct {
+	At       time.Time     `json:"at"`
+	Duration time.Duration `json:"duration"`
+	Text     string        `json:"text"`
 }
 
 type TasksBlock struct {
-	Duration time.Duration
-	Tasks    map[string]time.Duration
+	Duration time.Duration `json:"duration"`
+	Tasks    []TaskEntry   `json:"tasks"`
+	tasksMap map[string]TaskEntry
 }
 
 type Reporter struct {
@@ -38,11 +46,13 @@ func newProject(name string) Project {
 		Name: name,
 		NonPaid: TasksBlock{
 			Duration: 0,
-			Tasks:    make(map[string]time.Duration),
+			tasksMap: make(map[string]TaskEntry),
+			Tasks:    make([]TaskEntry, 0),
 		},
 		Paid: TasksBlock{
 			Duration: 0,
-			Tasks:    make(map[string]time.Duration),
+			tasksMap: make(map[string]TaskEntry),
+			Tasks:    make([]TaskEntry, 0),
 		},
 	}
 }
@@ -75,7 +85,8 @@ func (reporter *Reporter) BuildReport(workspaceId int, startDate time.Time, endD
 	if err := reporter.injectProjectNames(&report); err != nil {
 		return report, err
 	}
-	report = sumTime(report, reporter.ProjectTimePrecision)
+	flattenTaskEntries(&report)
+	sumTime(&report, reporter.ProjectTimePrecision)
 
 	return report, nil
 }
@@ -87,15 +98,18 @@ func (reporter *Reporter) groupByProjectTag(report *Report, startDate time.Time,
 	}
 
 	for _, entry := range timeEntries {
-		if _, ok := report.Projects[entry.ProjectId]; !ok {
-			report.Projects[entry.ProjectId] = newProject(strconv.Itoa(entry.ProjectId))
+		project, ok := report.Projects[entry.ProjectId]
+		if !ok {
+			project = newProject(strconv.Itoa(entry.ProjectId))
 		}
 
 		if _, isNonPaid := entry.Tags["non-paid"]; isNonPaid {
-			addTime(report.Projects[entry.ProjectId].NonPaid, entry, reporter.TaskTimePrecision)
+			project.NonPaid = upsertTask(project.NonPaid, entry, reporter.TaskTimePrecision)
 		} else {
-			addTime(report.Projects[entry.ProjectId].Paid, entry, reporter.TaskTimePrecision)
+			project.Paid = upsertTask(project.Paid, entry, reporter.TaskTimePrecision)
 		}
+
+		report.Projects[entry.ProjectId] = project
 	}
 
 	report.RawTimeEntries = timeEntries
@@ -118,33 +132,64 @@ func (reporter *Reporter) injectProjectNames(report *Report) error {
 	return nil
 }
 
-func addTime(block TasksBlock, entry toggl.TimeEntry, precision time.Duration) TasksBlock {
-	block.Tasks[entry.Description] += utils.RoundTime(entry.Duration, precision)
-	return block
-}
+func upsertTask(block TasksBlock, entry toggl.TimeEntry, precision time.Duration) TasksBlock {
+	duration := utils.RoundTime(entry.Duration, precision)
 
-func sumTime(report Report, precision time.Duration) Report {
-	for projectId := range report.Projects {
-		if project, ok := report.Projects[projectId]; ok {
-			project.Paid.Duration = sumProjectTime(project.Paid, precision)
-			report.TotalDuration += project.Paid.Duration
-
-			project.NonPaid.Duration = sumProjectTime(project.NonPaid, precision)
-			report.TotalDuration += project.NonPaid.Duration
-
-			project.TotalDuration = project.Paid.Duration + project.NonPaid.Duration
-
-			report.Projects[projectId] = project
+	if taskEntry, ok := block.tasksMap[entry.Description]; ok {
+		taskEntry.Duration += duration
+		taskEntry.At = entry.Start
+		block.tasksMap[entry.Description] = taskEntry
+	} else {
+		block.tasksMap[entry.Description] = TaskEntry{
+			Text:     entry.Description,
+			Duration: duration,
+			At:       entry.Start,
 		}
 	}
 
-	return report
+	return block
+}
+
+func sumTime(report *Report, precision time.Duration) {
+	for projectId, project := range report.Projects {
+		project.Paid.Duration = sumProjectTime(project.Paid, precision)
+		report.TotalDuration += project.Paid.Duration
+
+		project.NonPaid.Duration = sumProjectTime(project.NonPaid, precision)
+		report.TotalDuration += project.NonPaid.Duration
+
+		project.TotalDuration = project.Paid.Duration + project.NonPaid.Duration
+
+		report.Projects[projectId] = project
+	}
 }
 
 func sumProjectTime(block TasksBlock, precision time.Duration) time.Duration {
 	duration := time.Duration(0)
-	for _, taskDuration := range block.Tasks {
-		duration += taskDuration
+	for _, task := range block.Tasks {
+		duration += task.Duration
 	}
 	return utils.RoundTime(duration, precision)
+}
+
+func flattenTaskEntries(report *Report) {
+	for projectId, project := range report.Projects {
+		for _, entry := range project.Paid.tasksMap {
+			project.Paid.Tasks = append(project.Paid.Tasks, entry)
+		}
+		sort.Slice(project.Paid.Tasks, func(i, j int) bool {
+			return project.Paid.Tasks[i].At.Before(project.Paid.Tasks[j].At)
+		})
+		project.Paid.tasksMap = nil
+
+		for _, entry := range project.NonPaid.tasksMap {
+			project.NonPaid.Tasks = append(project.NonPaid.Tasks, entry)
+		}
+		sort.Slice(project.NonPaid.Tasks, func(i, j int) bool {
+			return project.NonPaid.Tasks[i].At.Before(project.NonPaid.Tasks[j].At)
+		})
+		project.NonPaid.tasksMap = nil
+
+		report.Projects[projectId] = project
+	}
 }

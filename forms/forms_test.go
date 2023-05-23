@@ -39,11 +39,11 @@ func GenTestReport() report.Report {
 				NonPaid: report.TasksBlock{},
 				Paid: report.TasksBlock{
 					Duration: time.Duration(3)*time.Hour + time.Duration(15)*time.Minute,
-					Tasks: map[string]time.Duration{
-						"Some task":      time.Duration(2) * time.Hour,
-						"Another task":   time.Duration(29) * time.Minute,
-						"Another task 2": time.Duration(14) * time.Minute,
-						"Last task":      time.Duration(28) * time.Minute,
+					Tasks: []report.TaskEntry{
+						{Text: "Some task", Duration: time.Duration(2) * time.Hour},
+						{Text: "Another task", Duration: time.Duration(29) * time.Minute},
+						{Text: "Another task 2", Duration: time.Duration(14) * time.Minute},
+						{Text: "Last task", Duration: time.Duration(28) * time.Minute},
 					},
 				},
 			},
@@ -51,9 +51,9 @@ func GenTestReport() report.Report {
 				Name: "Project #2",
 				NonPaid: report.TasksBlock{
 					Duration: time.Duration(1) * time.Hour,
-					Tasks: map[string]time.Duration{
-						"Nonpaid task 1": time.Duration(43) * time.Minute,
-						"Nonpaid task 2": time.Duration(15) * time.Minute,
+					Tasks: []report.TaskEntry{
+						{Text: "Nonpaid task 1", Duration: time.Duration(43) * time.Minute},
+						{Text: "Nonpaid task 2", Duration: time.Duration(15) * time.Minute},
 					},
 				},
 				Paid: report.TasksBlock{},

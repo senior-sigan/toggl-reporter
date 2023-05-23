@@ -1,10 +1,10 @@
 package forms
 
 import (
+	"goreporter/report"
 	"goreporter/utils"
 	"strings"
 	"text/template"
-	"time"
 )
 
 type FormFormatter struct {
@@ -13,7 +13,7 @@ type FormFormatter struct {
 
 func NewFormFormatter() *FormFormatter {
 	// TODO: maybe user need another format?
-	templateStr := "{{ range $task, $duration := . }}- {{ $task }}: {{ $duration | formatDuration }}\n{{ end }}"
+	templateStr := "{{ range $task := . }}- {{ $task.Text }}: {{ $task.Duration | formatDuration }}\n{{ end }}"
 
 	tmpl := template.Must(template.New("tasks").Funcs(template.FuncMap{
 		"formatDuration": utils.FormatDuration,
@@ -22,7 +22,7 @@ func NewFormFormatter() *FormFormatter {
 	return &FormFormatter{tmpl: tmpl}
 }
 
-func (formatter *FormFormatter) Format(tasks map[string]time.Duration) string {
+func (formatter *FormFormatter) Format(tasks []report.TaskEntry) string {
 	var w strings.Builder
 
 	err := formatter.tmpl.Execute(&w, tasks)

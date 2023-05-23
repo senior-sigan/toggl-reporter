@@ -84,7 +84,7 @@ func main() {
 	}
 
 	redmineGenerator = redmine.ReportGenerator{
-		UrlMap:  config.Forms.Redmine.Urls,
+		UrlMap: config.Forms.Redmine.Urls,
 	}
 
 	r := chi.NewRouter()
@@ -109,14 +109,7 @@ func main() {
 		return r
 	}())
 
-	r.Mount("/", func() http.Handler {
-		r := chi.NewRouter()
-		r.Use(UserOnly)
-		r.Use(UserWithWorkspaceOnly)
-		r.Use(MustHaveDateParam)
-		r.Get("/", ShowIndex)
-		return r
-	}())
+	r.With(UserOnly).With(UserWithWorkspaceOnly).With(MustHaveDateParam).Get("/", ShowIndex)
 
 	fmt.Printf("Listening to http://%v\n", config.Addr)
 	err = http.ListenAndServe(config.Addr, r)
