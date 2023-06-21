@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"goreporter/achievements"
+	"goreporter/db"
 	"goreporter/forms"
 	"goreporter/redmine"
 	"goreporter/report"
@@ -30,6 +31,7 @@ var renderer *Renderer
 var formGenerator forms.GoogleFormGenerator
 var redmineGenerator redmine.ReportGenerator
 var config Config
+var storage *db.DataBase
 
 const (
 	CookieToken     = "togglToken"
@@ -71,6 +73,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	storage = db.NewDatabase()
+
 	renderer = NewRenderer(&templatesFS)
 	renderer.Register("login", "templates/login.tmpl")
 	renderer.Register("index", "templates/index.tmpl")
@@ -175,6 +179,8 @@ func UserOnly(next http.Handler) http.Handler {
 				workspaceID = -1
 			}
 		}
+
+		storage.CreateUser(token, workspaceID)
 
 		ctx := context.WithValue(r.Context(), userContextKey, &User{
 			Toggl:       toggl.NewToggl(token),
