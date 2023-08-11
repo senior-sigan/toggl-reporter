@@ -260,17 +260,23 @@ func ShowIndex(w http.ResponseWriter, r *http.Request) {
 	}
 	dailyReport, err := reporter.BuildDailyReport(user.WorkspaceId, startDate)
 	if err != nil {
+		log.Printf("[ERROR] %v", err.Error())
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
+		return
 	}
 
 	weeklyReport, err := reporter.BuildReport(user.WorkspaceId, startDate.AddDate(0, 0, -7), startDate)
 	if err != nil {
+		log.Printf("[ERROR] %v", err.Error())
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
+		return
 	}
 
 	reportJson, err := json.Marshal(dailyReport)
 	if err != nil {
+		log.Printf("[ERROR] %v", err.Error())
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
+		return
 	}
 
 	achievementsList := make(map[string]achievements.UserAchievement)
