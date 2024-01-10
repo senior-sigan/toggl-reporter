@@ -15,18 +15,12 @@ nonpaid_project_tasks = "entry.714539999"
 nonpaid_project_hours = "entry.52836812_hour"
 nonpaid_project_minutes = "entry.52836812_minute"
 nonpaid_project_seconds = "entry.52836812_second"
-next_tasks = "entry.1462603973"
 report_year = "entry.1783131858_year"
 report_month = "entry.1783131858_month"
 report_day = "entry.1783131858_day"
-internal_tasks = "entry.20657743"
-internal_hours = "entry.2061354997_hour"
-internal_minutes = "entry.2061354997_minute"
-internal_seconds = "entry.2061354997_second"
 
 [forms.google.params]
 url = "https://docs.google.com/forms/d/e/GOOGLE_FORM_KEY/viewform"
-internal = "internal"
 
 [reporter]
 project_time_precision = 300 # in seconds

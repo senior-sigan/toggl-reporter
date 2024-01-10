@@ -18,14 +18,9 @@ func GenTestMapping() GoogleFormFieldsMapping {
 		NonpaidProjectHours:   "entry.52836812_hour",
 		NonpaidProjectMinutes: "entry.52836812_minute",
 		NonpaidProjectSeconds: "entry.52836812_second",
-		NextTasks:             "entry.1462603973",
 		ReportYear:            "entry.1783131858_year",
 		ReportMonth:           "entry.1783131858_month",
 		ReportDay:             "entry.1783131858_day",
-		InternalTasks:         "entry.20657743",
-		InternalHours:         "entry.2061354997_hour",
-		InternalMinutes:       "entry.2061354997_minute",
-		InternalSeconds:       "entry.2061354997_second",
 	}
 }
 
