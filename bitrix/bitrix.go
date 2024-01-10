@@ -12,7 +12,7 @@ type BitrixGenerator struct {
 
 func (gen *BitrixGenerator) buildUrl(project report.Project) string {
 	bitrixID, ok := gen.Projects[project.Name]
-	if ok {
+	if ok && len(bitrixID) != 0 {
 		return fmt.Sprintf("%sworkgroups/group/%s/tasks/", gen.URL, bitrixID)
 	}
 	return ""
