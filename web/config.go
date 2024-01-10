@@ -19,6 +19,12 @@ type Config struct {
 			Urls map[string]string
 		}
 	}
+	Bitrix struct {
+		Projects map[string]string
+		Params   struct {
+			Url string
+		}
+	}
 }
 
 type ReporterConfig struct {

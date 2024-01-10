@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"goreporter/achievements"
+	"goreporter/bitrix"
 	"goreporter/db"
 	"goreporter/forms"
 	"goreporter/redmine"
@@ -30,6 +31,7 @@ var templatesFS embed.FS
 var renderer *Renderer
 var formGenerator forms.GoogleFormGenerator
 var redmineGenerator redmine.ReportGenerator
+var bitrixGenerator bitrix.BitrixGenerator
 var config Config
 var storage *db.DataBase
 
@@ -65,6 +67,7 @@ type ReportPage struct {
 	ReportJSON      string
 	FormData        map[string]string
 	RedmineData     map[int]map[string]string
+	BitrixData      map[int]string
 	AchievementsMap map[string]achievements.UserAchievement
 }
 
@@ -89,6 +92,11 @@ func main() {
 
 	redmineGenerator = redmine.ReportGenerator{
 		UrlMap: config.Forms.Redmine.Urls,
+	}
+
+	bitrixGenerator = bitrix.BitrixGenerator{
+		URL:      config.Bitrix.Params.Url,
+		Projects: config.Bitrix.Projects,
 	}
 
 	r := chi.NewRouter()
@@ -298,6 +306,7 @@ func ShowIndex(w http.ResponseWriter, r *http.Request) {
 		Report:          dailyReport,
 		FormData:        formGenerator.ConvertReportToForms(dailyReport),
 		RedmineData:     redmineGenerator.BuildRedmineReportForms(dailyReport),
+		BitrixData:      bitrixGenerator.BuildForms(dailyReport),
 		AchievementsMap: achievementsList,
 		ReportJSON:      string(reportJson),
 	}

@@ -5,6 +5,13 @@ instructions = "http://example.com"
 [forms.redmine.urls]
 default = "https://www.redmine.org/"
 
+[bitrix.params]
+url = "https://COMPANY_NAME.bitrix24.ru/"
+
+[bitrix.projects]
+report_project_name = "42"
+report_another_project_name = "77"
+
 [forms.google.mapping]
 project_name = "entry.2004201849"
 project_tasks = "entry.60008525"

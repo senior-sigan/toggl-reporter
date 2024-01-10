@@ -32,16 +32,22 @@
 
     <br>
     {{- $redmineData := .RedmineData -}}
+    {{- $bitrixData := .BitrixData -}}
     {{- $formData := .FormData -}}
     <section class="entries">
     {{ range $id, $project := .Report.Projects }}
         <div class="entry">
         {{- $formUrl := index $formData $project.Name -}}
         {{- $redmineProject := index $redmineData $id -}}
-        {{ if $formUrl }}
-        <h2><a href='{{ $formUrl }}' target='_blank'>
-        {{ $project.Name }} {{ $project.TotalDuration | formatDuration }}
-        </a></h2>
+        {{- $bitrixProjectUrl := index $bitrixData $id -}}
+        {{ if $bitrixProjectUrl }}
+        <h2>
+            <a href='{{ $bitrixProjectUrl }}' target='_blank'>{{ $project.Name }} {{ $project.TotalDuration | formatDuration }}*</a>
+        </h2>
+        {{ else if $formUrl }}
+        <h2>
+            <a href='{{ $formUrl }}' target='_blank'>{{ $project.Name }} {{ $project.TotalDuration | formatDuration }}</a>
+        </h2>
         {{ else }}
         <h2>{{ $project.Name }} {{ $project.TotalDuration | formatDuration }}</h2>
         {{ end }}
