@@ -91,6 +91,13 @@ func (reporter *Reporter) BuildReport(workspaceId int, startDate time.Time, endD
 	return report, nil
 }
 
+func isNonPaid(entry toggl.TimeEntry) bool {
+	_, isNonPaid := entry.Tags["non-paid"]
+	_, isNonBillable := entry.Tags["non-billable"]
+
+	return isNonPaid || isNonBillable
+}
+
 func (reporter *Reporter) groupByProjectTag(report *Report, startDate time.Time, endDate time.Time) error {
 	timeEntries, err := reporter.TogglClient.GetTimeEntriesForWorkspaceV2(startDate, endDate, report.WorkspaceId)
 	if err != nil {
@@ -103,7 +110,7 @@ func (reporter *Reporter) groupByProjectTag(report *Report, startDate time.Time,
 			project = newProject(strconv.Itoa(entry.ProjectId))
 		}
 
-		if _, isNonPaid := entry.Tags["non-paid"]; isNonPaid {
+		if isNonPaid(entry) {
 			project.NonPaid = upsertTask(project.NonPaid, entry, reporter.TaskTimePrecision)
 		} else {
 			project.Paid = upsertTask(project.Paid, entry, reporter.TaskTimePrecision)
